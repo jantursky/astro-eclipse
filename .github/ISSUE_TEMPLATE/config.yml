@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/jantursky/astro-eclipse/discussions
+    about: Ask how to do something before you open an issue.
+  - name: Documentation
+    url: https://astro-eclipse-docs.vercel.app
+    about: Guides, the config reference and the client API.

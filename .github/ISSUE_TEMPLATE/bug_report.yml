@@ -1,0 +1,62 @@
+name: Bug report
+description: Something doesn't switch, flashes, throws, or doesn't match the docs.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please check the [docs](https://astro-eclipse-docs.vercel.app) first, and keep the reproduction as small as you can.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead. Include the error message or the console output if there is one.
+    validations:
+      required: true
+  - type: input
+    id: repro
+    attributes:
+      label: Reproduction
+      description: A link to a minimal project, such as a StackBlitz or a repository.
+      placeholder: https://
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: eclipse() config
+      description: The options you pass to `eclipse({...})` in `astro.config.mjs`, or "default" if you pass none.
+      render: js
+    validations:
+      required: true
+  - type: dropdown
+    id: client_router
+    attributes:
+      label: Does the site use ClientRouter
+      options:
+        - 'Yes'
+        - 'No'
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: astro-eclipse version
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: astro
+    attributes:
+      label: Astro version
+      placeholder: 7.4.5
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Chrome 140, Firefox 144, Safari 18.4
+    validations:
+      required: true

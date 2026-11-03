@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # Astro and its own tooling move together, so one pull request tests them together.
+      astro:
+        patterns: ['astro', '@astrojs/*', 'eslint-plugin-astro', 'prettier-plugin-astro']
+      dev-tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # typescript-eslint does not support TypeScript 6 yet; keep the 5.9 line until it does.
+      - dependency-name: typescript
+        versions: ['>= 6.0.0']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
