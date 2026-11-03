@@ -14,6 +14,6 @@
   },
   "dependencies": {
     "astro-eclipse": "workspace:*",
-    "blume": "^2.2.6"
+    "blume": "2.2.4"
   }
 }
