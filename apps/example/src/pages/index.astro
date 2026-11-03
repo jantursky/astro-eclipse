@@ -1,4 +1,5 @@
 ---
+import CodeBlock from '../components/CodeBlock.astro'
 import Base from '../layouts/Base.astro'
 
 const themes = ['light', 'dark', 'sepia', 'forest', 'system']
@@ -34,13 +35,13 @@ button.addEventListener('click', (event) => {
 })`
 ---
 
-<Base title="astro-eclipse: animated theme transitions for Astro">
+<Base title="Astro Eclipse: animated theme transitions for Astro">
   <section class="wrap hero">
     <div class="stack">
       <span class="label">Astro integration</span>
       <h1>Change the theme. Watch it happen.</h1>
       <p class="lede">
-        astro-eclipse switches themes with a View Transition that starts where the visitor clicked. No flash on load, no
+        Astro Eclipse switches themes with a View Transition that starts where the visitor clicked. No flash on load, no
         broken state across ClientRouter navigation, plain CSS for the palettes.
       </p>
       <div class="actions">
@@ -101,13 +102,13 @@ button.addEventListener('click', (event) => {
   <section class="wrap section" aria-labelledby="install">
     <div class="stack">
       <h2 id="install">Install</h2>
-      <pre class="code"><code>{install}</code></pre>
+      <CodeBlock code={install} />
       <p class="muted">
         Add the integration to <code>astro.config.mjs</code> and list your theme names.
       </p>
-      <pre class="code"><code>{config}</code></pre>
+      <CodeBlock code={config} />
       <p class="muted">Then call the client API from any script.</p>
-      <pre class="code"><code>{usage}</code></pre>
+      <CodeBlock code={usage} />
     </div>
   </section>
 

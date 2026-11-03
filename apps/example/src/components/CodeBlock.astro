@@ -1,0 +1,30 @@
+---
+import { highlight } from '../lib/highlight'
+import CopyButton from './CopyButton.astro'
+
+interface Props {
+  code: string
+  /** Marks the `<code>` so a script can rewrite it, as the gallery does for the current call. */
+  source?: boolean
+}
+const { code, source = false } = Astro.props
+const html = `<code${source ? ' data-source' : ''}>${highlight(code)}</code>`
+---
+
+<figure class="codeblock">
+  <pre class="code" set:html={html} />
+  <CopyButton class="copy-float" />
+</figure>
+
+<style>
+  .codeblock {
+    position: relative;
+    margin: 0;
+    width: 100%;
+    min-width: 0;
+  }
+  /* Leave room on the right, so a long line never runs under the copy button. */
+  .codeblock :global(.code) {
+    padding-right: 56px;
+  }
+</style>

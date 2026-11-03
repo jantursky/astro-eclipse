@@ -1,9 +1,12 @@
 ---
 import Base from '../layouts/Base.astro'
-import { directions, origins, themeCounts, transitions } from '../data/transitions'
+import CodeBlock from '../components/CodeBlock.astro'
+import CopyButton from '../components/CopyButton.astro'
+import { highlight } from '../lib/highlight'
+import { defaultTransition, directions, examplesFor, origins, themeCounts, transitions } from '../data/transitions'
 ---
 
-<Base title="Gallery: astro-eclipse" description="Every astro-eclipse transition, live, with the exact setTheme call.">
+<Base title="Gallery: Astro Eclipse" description="Every Astro Eclipse transition, live, with the exact setTheme call.">
   <section class="wrap head">
     <div class="stack">
       <span class="label">Gallery</span>
@@ -15,119 +18,174 @@ import { directions, origins, themeCounts, transitions } from '../data/transitio
     </div>
   </section>
 
-  <section class="wrap section" data-gallery aria-label="Playground">
-    <div class="layout">
-      <div class="card controls">
-        <div class="field">
-          <label for="effect">Effect</label>
-          <select id="effect">
-            {transitions.map((entry) => (
-              <option value={entry.id} data-verified={String(entry.verified)}>
-                {entry.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="duration">
-            Duration{' '}
-            <output id="duration-out" for="duration">
-              500 ms
-            </output>
-          </label>
-          <input id="duration" type="range" min="100" max="2000" step="50" value="500" />
-        </div>
-
-        <fieldset class="field">
-          <legend>Origin</legend>
-          <div class="options">
-            {origins.map((origin, index) => (
-              <label class="option">
-                <input type="radio" name="origin" value={origin.id} checked={index === 0} />
-                <span>{origin.label}</span>
-              </label>
-            ))}
+  <div data-gallery>
+    <section class="wrap section" aria-label="Playground">
+      <div class="layout">
+        <div class="card controls">
+          <div class="field">
+            <label for="effect">Effect</label>
+            <select id="effect">
+              {transitions.map((entry) => (
+                <option
+                  value={entry.id}
+                  data-verified={String(entry.verified)}
+                  selected={entry.id === defaultTransition}
+                >
+                  {entry.label}
+                </option>
+              ))}
+            </select>
           </div>
-        </fieldset>
 
-        <fieldset class="field">
-          <legend>Direction (wipe, blinds)</legend>
-          <div class="options">
-            {directions.map((direction, index) => (
-              <label class="option">
-                <input type="radio" name="direction" value={direction.id} checked={index === 0} />
-                <span>{direction.label}</span>
-              </label>
-            ))}
+          <div class="field">
+            <label for="duration">
+              Duration{' '}
+              <output id="duration-out" for="duration">
+                500 ms
+              </output>
+            </label>
+            <input id="duration" type="range" min="100" max="2000" step="50" value="500" />
           </div>
-        </fieldset>
 
-        <fieldset class="field">
-          <legend>Themes in the cycle</legend>
-          <div class="options">
-            {themeCounts.map((count) => (
-              <label class="option">
-                <input type="radio" name="count" value={count} checked={count === 2} />
-                <span>{count}</span>
-              </label>
-            ))}
-          </div>
-          <p class="caption">
-            Cycle: <span data-cycle></span>
-          </p>
-        </fieldset>
-
-        <div class="field">
-          <label class="switch">
-            <input id="reduced" type="checkbox" role="switch" />
-            <span>Simulate reduced motion</span>
-          </label>
-          <p class="muted small">
-            The switch passes <code>duration: 0</code>, which makes the change instant. The real OS setting is honored
-            automatically with no code on your side. Your system reports reduced motion:&nbsp;
-            <strong data-os-motion>…</strong>.
-          </p>
-        </div>
-
-        <button type="button" class="btn btn-primary" data-play>
-          Play transition
-        </button>
-      </div>
-
-      <div class="side">
-        <div class="stack">
-          <h2>The call</h2>
-          <pre class="code"><code data-source>setTheme()</code></pre>
-          <p class="muted small" data-note hidden>
-            Unverified in real browsers. This effect has not been checked on Chrome, Safari or Firefox yet.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="wrap section" aria-labelledby="all">
-    <div class="stack">
-      <h2 id="all">All effects</h2>
-      <ul class="list">
-        {transitions.map((entry) => (
-          <li class="card item">
-            <div>
-              <h3>
-                {entry.label} <code>{entry.id}</code>
-              </h3>
-              <p class="muted">{entry.description}</p>
-              {!entry.verified && <p class="caption">Unverified in real browsers.</p>}
+          <fieldset class="field">
+            <legend>Origin</legend>
+            <div class="options">
+              {origins.map((origin, index) => (
+                <label class="option">
+                  <input type="radio" name="origin" value={origin.id} checked={index === 0} />
+                  <span>{origin.label}</span>
+                </label>
+              ))}
             </div>
-            <button type="button" class="btn btn-ghost" data-play={entry.id}>
-              Play {entry.label}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  </section>
+          </fieldset>
+
+          <fieldset class="field">
+            <legend>Direction (wipe, slide, flip, stairs ...)</legend>
+            <div class="options">
+              {directions.map((direction, index) => (
+                <label class="option">
+                  <input type="radio" name="direction" value={direction.id} checked={index === 0} />
+                  <span>{direction.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset class="field">
+            <legend>Themes in the cycle</legend>
+            <div class="options">
+              {themeCounts.map((count) => (
+                <label class="option">
+                  <input type="radio" name="count" value={count} checked={count === 2} />
+                  <span>{count}</span>
+                </label>
+              ))}
+            </div>
+            <p class="caption">
+              Cycle: <span data-cycle></span>
+            </p>
+          </fieldset>
+
+          <div class="field">
+            <label class="switch">
+              <input id="reduced" type="checkbox" role="switch" />
+              <span>Simulate reduced motion</span>
+            </label>
+            <p class="muted small">
+              The switch passes <code>duration: 0</code>, which makes the change instant. The real OS setting is honored
+              automatically with no code on your side. Your system reports reduced motion:&nbsp;
+              <strong data-os-motion>…</strong>.
+            </p>
+          </div>
+
+          <button type="button" class="btn btn-primary" data-play>
+            Play transition
+          </button>
+        </div>
+
+        <div class="side">
+          <div class="stack">
+            <h2>Preview</h2>
+            <div class="stage" data-stage aria-hidden="true">
+              <div class="pv pv-old">
+                <b />
+              </div>
+              <div class="pv pv-new">
+                <b />
+                <i />
+              </div>
+            </div>
+            <p class="caption">
+              A loop of the selected effect with your settings. Press play to run it on this whole page.
+            </p>
+            <h2>The call</h2>
+            <CodeBlock code="setTheme()" source />
+            <p class="muted small" data-note hidden>
+              Unverified in real browsers. This effect has not been checked on Chrome, Safari or Firefox yet.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap section" aria-labelledby="all">
+      <div class="stack">
+        <h2 id="all">All effects</h2>
+        <ul class="list">
+          {transitions.map((entry) => (
+            <li class="card item">
+              <div class="preview" data-preview={entry.id} aria-hidden="true">
+                <div class="pv pv-old">
+                  <b />
+                </div>
+                <div class="pv pv-new">
+                  <b />
+                  <i />
+                </div>
+              </div>
+              <div class="info">
+                <h3>
+                  {entry.label} <code>{entry.id}</code>
+                </h3>
+                <p class="muted">{entry.description}</p>
+                {!entry.verified && <p class="caption">Unverified in real browsers.</p>}
+              </div>
+              <div class="actions">
+                <button type="button" class="btn btn-ghost" data-play={entry.id} aria-label={`Play ${entry.label}`}>
+                  Play
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  data-expand
+                  aria-expanded="false"
+                  aria-controls={`code-${entry.id}`}
+                >
+                  <span data-expand-label>Show code</span>
+                  <span class="chevron" aria-hidden="true" />
+                </button>
+              </div>
+              <div class="expand" id={`code-${entry.id}`} data-panel inert>
+                <div class="expand-inner">
+                  <div class="snippets">
+                    {examplesFor(entry.id).map((example) => (
+                      <figure class="snippet">
+                        <figcaption>
+                          <span>{example.title}</span>
+                          <CopyButton />
+                        </figcaption>
+                        <pre class="code" set:html={`<code>${highlight(example.code)}</code>`} />
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  </div>
 
   <script>
     import '../scripts/gallery'
@@ -154,6 +212,42 @@ import { directions, origins, themeCounts, transitions } from '../data/transitio
   }
   .side {
     min-width: 0;
+    position: sticky;
+    top: 24px;
+  }
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 60vh;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .stage .pv b {
+    width: 22%;
+    height: 4%;
+    border-radius: 999px;
+    box-shadow: none;
+    margin-top: -6%;
+    position: relative;
+  }
+  .stage .pv b::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 250%;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: currentColor;
+  }
+  .stage .pv-new i {
+    top: 5%;
+    right: 3%;
+    width: 14px;
+    height: 14px;
   }
   .field {
     display: flex;
@@ -225,22 +319,153 @@ import { directions, origins, themeCounts, transitions } from '../data/transitio
     gap: var(--gap);
   }
   .item {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) auto;
     align-items: center;
     gap: 20px;
-    flex-wrap: wrap;
+  }
+  .info {
+    min-width: 0;
+  }
+  /* A fixed two-tone swatch, so the preview reads the same whichever theme the page is in. */
+  .preview {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .pv {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  /* Two bars stand in for text, so there is nothing for a contrast check to read mid-fade. */
+  .pv b {
+    width: 48px;
+    height: 8px;
+    border-radius: 4px;
+    background: currentColor;
+    box-shadow: 0 16px 0 currentColor;
+    margin-top: -16px;
+  }
+  .pv-old {
+    background: #f5f5f2;
+    color: #000;
+  }
+  .pv-new {
+    background: #000;
+    color: #fff;
+  }
+  .pv-new i {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffffa7;
   }
   .item h3 {
     margin-bottom: 4px;
   }
-  .item code {
+  .item h3 code {
     margin-left: 8px;
     color: var(--text-muted);
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .chevron {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-left: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 250ms ease;
+  }
+  [data-expand][aria-expanded='true'] .chevron {
+    transform: translateY(2px) rotate(-135deg);
+  }
+  /* Height animates from 0fr to 1fr, so the panel needs no measured size. */
+  .expand {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+      grid-template-rows 280ms ease,
+      visibility 0s linear 280ms;
+  }
+  .expand.open {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition:
+      grid-template-rows 280ms ease,
+      visibility 0s;
+  }
+  .expand-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .snippets {
+    display: grid;
+    gap: 16px;
+    padding-top: 8px;
+  }
+  .snippet {
+    margin: 0;
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+  .snippet figcaption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 36px;
+    padding-right: 6px;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .expand-inner .code {
+    font-size: 0.875rem;
+    white-space: pre;
+    tab-size: 2;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .expand,
+    .expand.open,
+    .chevron {
+      transition: none;
+    }
+  }
+  @media (max-width: 600px) {
+    .item {
+      grid-template-columns: 96px minmax(0, 1fr);
+    }
+    .actions {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+    }
   }
   @media (max-width: 900px) {
     .layout {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .side {
+      position: static;
     }
   }
   @media (forced-colors: active) {

@@ -3,7 +3,7 @@ title: Transitions
 description: The built-in effects, and how to set the origin, duration and easing, with the cases where the theme switches instantly.
 ---
 
-A theme change runs inside `document.startViewTransition`. The browser snapshots the page before and after, and astro-eclipse animates the two snapshots with the Web Animations API. The theme itself changes at the start; the animation only decides how the new one is revealed.
+A theme change runs inside `document.startViewTransition`. The browser snapshots the page before and after, and Astro Eclipse animates the two snapshots with the Web Animations API. The theme itself changes at the start; the animation only decides how the new one is revealed.
 
 ## Built-in effects
 
@@ -16,8 +16,31 @@ A theme change runs inside `document.startViewTransition`. The browser snapshots
 | `diamond`          | The new theme grows as a diamond from the origin.                               |
 | `iris`             | The new theme opens as a hexagon from the origin, like a camera iris.           |
 | `blinds`           | Eight slats open side by side, growing in the chosen `direction`. No origin.    |
+| `blur-circle`      | Like `circle`, and the new theme sharpens from a blur while it opens.           |
+| `star`             | The new theme grows as a five-pointed star from the origin.                     |
+| `diagonal`         | A slanted edge sweeps across the screen in the chosen `direction`. No origin.   |
+| `diagonal-soft`    | A diagonal sweep with a feathered edge, in the chosen `direction`. No origin.   |
+| `split`            | The new theme opens from the middle outward. `direction` sets the axis.         |
+| `scan`             | Forty thin slats reveal the new theme like a scan line. No origin.              |
+| `slide`            | The new theme pushes the old one off the screen in the chosen `direction`.      |
+| `zoom`             | The old theme shrinks away as the new one settles in from slightly larger.      |
+| `square`           | The new theme grows as a square from the origin.                                |
+| `triangle`         | The new theme grows as a triangle from the origin.                              |
+| `sunburst`         | The new theme bursts out as a twelve-point sun.                                 |
+| `cross`            | The new theme grows as a plus sign.                                             |
+| `heart`            | The new theme grows as a heart.                                                 |
+| `ripple`           | Rings spread from the origin and merge into the new theme.                      |
+| `clock`            | A radial sweep, one clockwise turn around the origin.                           |
+| `curtain`          | Two shutters close in from opposite edges.                                      |
+| `stairs`           | Ten columns or rows grow one after the other.                                   |
+| `mosaic`           | A grid of squares opens in a scattered order.                                   |
+| `blur`             | Both themes blur while they cross-fade.                                         |
+| `flip`             | The page turns like a card around the axis of `direction`.                      |
+| `spin`             | The new theme spins and grows in from nothing.                                  |
+| `cover`            | The new theme slides in over the old one.                                       |
+| `reveal`           | The old theme slides away and uncovers the new one.                             |
 
-`direction` is `'right'` (the default), `'left'`, `'down'` or `'up'`. It sets where `wipe` travels, and which way the `blinds` slats grow: `'left'` and `'right'` give vertical slats, `'up'` and `'down'` give horizontal ones.
+`direction` is `'right'` (the default), `'left'`, `'down'` or `'up'`. It sets where `wipe`, `diagonal`, `diagonal-soft`, `scan`, `slide`, `stairs`, `cover` and `reveal` travel, which way `flip` turns, and which way the `blinds` slats grow: `'left'` and `'right'` give vertical slats, `'up'` and `'down'` give horizontal ones. For `split` and `curtain`, `'left'` and `'right'` open from a vertical centre line, `'up'` and `'down'` from a horizontal one.
 
 ```ts
 setTheme('dark', { transition: 'wipe', direction: 'down' })
@@ -54,7 +77,7 @@ setTheme('dark', { origin: { x: 120, y: 40 } }) // viewport pixels
 setTheme('dark', { origin: 'center' }) // middle of the screen, also the default
 ```
 
-A click made with the keyboard (Enter or Space on a button) has no pointer position. astro-eclipse reveals from the center of the button in that case.
+A click made with the keyboard (Enter or Space on a button) has no pointer position. Astro Eclipse reveals from the center of the button in that case.
 
 ## Duration and easing
 
@@ -85,6 +108,6 @@ A second `setTheme` during a running transition skips the first one. The first a
 
 ## Style the transition yourself
 
-astro-eclipse switches off the browser's default cross-fade for `::view-transition-old(root)` and `::view-transition-new(root)` for the length of each transition and removes that style afterwards. Do not add your own animations on those pseudo-elements for the root, or they will fight the effect.
+Astro Eclipse switches off the browser's default cross-fade for `::view-transition-old(root)` and `::view-transition-new(root)` for the length of each transition and removes that style afterwards. Do not add your own animations on those pseudo-elements for the root, or they will fight the effect.
 
 Related: [accessibility](/guides/accessibility), [client API](/reference/client-api).

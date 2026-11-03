@@ -7,7 +7,7 @@ const pkg = JSON.parse(readFileSync(new URL('../../packages/astro-eclipse/packag
 }
 
 export default defineConfig({
-  title: 'astro-eclipse',
+  title: 'Astro Eclipse',
   description: 'Animated theme switching for Astro, built on View Transitions.',
   logo: { image: { light: '/logo.svg', dark: '/icon-dark.svg', alt: '' } },
   github: {

@@ -1,10 +1,18 @@
 ---
 title: Client API
-description: setTheme, toggleTheme, getTheme, getPreference, onThemeChange and defineTransition, with signatures and error cases.
+description: setTheme, toggleTheme, getTheme, getPreference, onThemeChange, defineTransition and getTransition, with signatures and error cases.
 ---
 
 ```ts
-import { setTheme, toggleTheme, getTheme, getPreference, onThemeChange, defineTransition } from 'astro-eclipse/client'
+import {
+  setTheme,
+  toggleTheme,
+  getTheme,
+  getPreference,
+  onThemeChange,
+  defineTransition,
+  getTransition,
+} from 'astro-eclipse/client'
 ```
 
 The module reads your resolved config through a virtual module that the integration provides, so it works only in an Astro project that has `eclipse()` in `integrations`.
@@ -95,5 +103,13 @@ function defineTransition(name: string, definition: TransitionDefinition): Trans
 ```
 
 Registers an effect and returns the definition. An existing name, built-in or not, is replaced. See [custom transitions](/guides/custom-transition) for the shape and a worked example.
+
+## getTransition
+
+```ts
+function getTransition(name: string): TransitionDefinition | undefined
+```
+
+Returns the registered definition for `name`, or `undefined`. Call its `old` and `new` functions with a context to get the keyframes, for example to preview an effect on an element of your own. The demo gallery does this for its preview squares.
 
 Related: [config](/reference/config), [head script](/reference/head-script), [framework islands](/guides/framework-islands).

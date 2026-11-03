@@ -3,7 +3,7 @@ title: Accessibility
 description: Naming the toggle, announcing theme changes, reduced motion, forced colors and contrast.
 ---
 
-astro-eclipse changes an attribute and runs an animation. The rest of the accessibility work is in the markup and CSS you write.
+Astro Eclipse changes an attribute and runs an animation. The rest of the accessibility work is in the markup and CSS you write.
 
 ## Name the button
 
@@ -36,7 +36,7 @@ A native `<button>` already works with Enter and Space. A keyboard click reveals
 
 ## Announcements
 
-astro-eclipse announces nothing. The change is visible, and `aria-pressed` on the button already tells a screen reader user the state when they focus it. If you want a spoken confirmation, add a polite live region and write to it on change:
+Astro Eclipse announces nothing. The change is visible, and `aria-pressed` on the button already tells a screen reader user the state when they focus it. If you want a spoken confirmation, add a polite live region and write to it on change:
 
 ```html
 <div id="theme-status" role="status" class="visually-hidden"></div>
@@ -71,7 +71,7 @@ When the visitor has `prefers-reduced-motion: reduce`, the theme switches instan
 
 ## Forced colors
 
-In Windows High Contrast and other forced-colors modes the browser replaces your colors with the visitor's palette. Your theme CSS has little effect there, and the switch has nothing visible to reveal. astro-eclipse does nothing special for this mode. Use system colors for anything that must stay visible (`ButtonText`, `Canvas`), and do not carry meaning in color alone. This has not been checked in a forced-colors browser.
+In Windows High Contrast and other forced-colors modes the browser replaces your colors with the visitor's palette. Your theme CSS has little effect there, and the switch has nothing visible to reveal. Astro Eclipse does nothing special for this mode. Use system colors for anything that must stay visible (`ButtonText`, `Canvas`), and do not carry meaning in color alone. This has not been checked in a forced-colors browser.
 
 ## Contrast
 

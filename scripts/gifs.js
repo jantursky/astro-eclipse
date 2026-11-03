@@ -19,6 +19,14 @@ const effects = [
   { id: 'diamond' },
   { id: 'iris' },
   { id: 'blinds', direction: 'right' },
+  { id: 'blur-circle' },
+  { id: 'star' },
+  { id: 'diagonal', direction: 'right' },
+  { id: 'diagonal-soft', direction: 'right' },
+  { id: 'split', direction: 'right' },
+  { id: 'scan', direction: 'right' },
+  { id: 'slide', direction: 'right' },
+  { id: 'zoom' },
   { id: 'fade' },
 ]
 

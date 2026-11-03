@@ -8,6 +8,7 @@ const raw = 'https://raw.githubusercontent.com/jantursky/astro-eclipse/main/'
 const source = readFileSync(join(root, 'README.md'), 'utf8')
 const packaged = source
   .replaceAll('](.github/assets/', `](${raw}.github/assets/`)
+  .replaceAll('src=".github/assets/', `src="${raw}.github/assets/`)
   .replaceAll('](LICENSE)', '](https://github.com/jantursky/astro-eclipse/blob/main/LICENSE)')
   .replaceAll(
     '](packages/astro-eclipse/CHANGELOG.md)',

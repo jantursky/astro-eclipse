@@ -3,10 +3,12 @@
 /* Example palettes. The library ships none; these are plain CSS variables per [data-theme]. */
 :root[data-theme='light'] {
   color-scheme: light;
+  --code-accent: #6b5a00;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
+  --code-accent: #fddd05;
 }
 
 :root[data-theme='sepia'] {
@@ -19,6 +21,7 @@
   --text-caption: #6f5f45;
   --border: #d3c4a0;
   --accent-edge: #7a5a00;
+  --code-accent: #7a5a00;
   --logo-gradient-from: #d83333;
   --logo-gradient-to: #f041ff;
 }
@@ -33,6 +36,7 @@
   --text-caption: #8aa192;
   --border: #284236;
   --accent-edge: #fddd05;
+  --code-accent: #fddd05;
   --logo-gradient-from: #f26a6a;
   --logo-gradient-to: #f777ff;
 }
@@ -220,14 +224,29 @@ pre {
   max-width: 100%;
 }
 
-.code .tok-str,
-.code .tok-num {
-  color: var(--text);
+.code .tok-com,
+.code .tok-pun {
+  color: var(--text-muted);
 }
 
-.code .tok-key,
-.code .tok-kw {
-  color: var(--text-muted);
+.code .tok-com {
+  font-style: italic;
+}
+
+.code .tok-str,
+.code .tok-num {
+  color: var(--code-accent);
+}
+
+.code .tok-kw,
+.code .tok-tag,
+.code .tok-fn {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.code .tok-key {
+  color: var(--text);
 }
 
 .sr-only {

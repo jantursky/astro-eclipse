@@ -1,13 +1,13 @@
 ---
 title: Tailwind
-description: Use dark mode utilities with astro-eclipse, with the class attribute and the Tailwind 4 custom variant.
+description: Use dark mode utilities with Astro Eclipse, with the class attribute and the Tailwind 4 custom variant.
 ---
 
-Tailwind's `dark:` utilities need to know what "dark" means in your page. There are two setups. Both work with astro-eclipse; pick one.
+Tailwind's `dark:` utilities need to know what "dark" means in your page. There are two setups. Both work with Astro Eclipse; pick one.
 
 ## Option 1: class attribute
 
-Tell astro-eclipse to toggle classes on `<html>` instead of setting `data-theme`:
+Tell Astro Eclipse to toggle classes on `<html>` instead of setting `data-theme`:
 
 ```js astro.config.mjs
 import eclipse from 'astro-eclipse'
@@ -49,7 +49,7 @@ export default defineConfig({
 
 ## Which config to choose
 
-| Setup     | astro-eclipse config              | Tailwind 4 CSS                                                                |
+| Setup     | Astro Eclipse config              | Tailwind 4 CSS                                                                |
 | --------- | --------------------------------- | ----------------------------------------------------------------------------- |
 | Class     | `eclipse({ attribute: 'class' })` | `@custom-variant dark (&:where(.dark, .dark *));`                             |
 | Attribute | `eclipse()`                       | `@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));` |

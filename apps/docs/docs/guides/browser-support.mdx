@@ -20,7 +20,7 @@ The versions in the table come from [MDN browser compatibility data](https://dev
 
 ## Feature detection
 
-astro-eclipse tests `typeof document.startViewTransition === 'function'` on every call. You do not need your own check. If you want to show something different when animation is unavailable:
+Astro Eclipse tests `typeof document.startViewTransition === 'function'` on every call. You do not need your own check. If you want to show something different when animation is unavailable:
 
 ```ts
 const canAnimate = typeof document.startViewTransition === 'function'
