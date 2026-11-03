@@ -9,3 +9,4 @@ apps/docs/docs/_generated/
 test-results/
 playwright-report/
 .size/
+packages/astro-eclipse/README.md

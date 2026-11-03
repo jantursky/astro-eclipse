@@ -22,7 +22,7 @@
     "test": "bun run --filter astro-eclipse test",
     "test:coverage": "bun run --filter astro-eclipse test:coverage",
     "test:pack": "bun run --filter astro-eclipse test:pack",
-    "typecheck": "bun run --filter '*' typecheck",
+    "typecheck": "bun run build:lib && bun run --filter '*' typecheck",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

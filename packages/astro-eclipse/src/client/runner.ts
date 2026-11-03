@@ -9,8 +9,31 @@ export interface TransitionRequest {
   direction: Direction
 }
 
-/** Astro's ClientRouter sets this on <html> while it navigates, and removes it when the page has swapped. */
+/**
+ * Astro's ClientRouter sets this on <html> from the moment it starts its own view transition (after the new
+ * page is fetched) until the page has swapped.
+ */
 const ASTRO_NAVIGATING = 'data-astro-transition'
+
+/** Astro fires these around the fetch of the next page, before it sets the attribute above. */
+const FETCH_TIMEOUT = 15_000
+let fetchingSince = 0
+let watching = false
+
+export function watchNavigation(): void {
+  if (watching) return
+  watching = true
+  document.addEventListener('astro:before-preparation', () => {
+    fetchingSince = Date.now()
+  })
+  document.addEventListener('astro:after-preparation', () => {
+    fetchingSince = 0
+  })
+}
+
+const isNavigating = (): boolean =>
+  document.documentElement.hasAttribute(ASTRO_NAVIGATING) ||
+  (fetchingSince !== 0 && Date.now() - fetchingSince < FETCH_TIMEOUT)
 
 export function noop(): void {
   // Nothing to do: used where a promise rejection or an unsubscribe has no work left.
@@ -45,7 +68,7 @@ export function runTransition(update: () => void, request: TransitionRequest): v
     request.duration > 0 &&
     !prefersReducedMotion() &&
     // A second view transition would cancel Astro's page transition and leave the navigation half done.
-    !document.documentElement.hasAttribute(ASTRO_NAVIGATING)
+    !isNavigating()
 
   if (!canAnimate) {
     update()

@@ -4,7 +4,8 @@ import { supportsSystem } from './config.js'
 /**
  * The script injected into every `<head>`. It runs before first paint, so the page never shows the
  * wrong theme, and it keeps three things in sync without any client bundle: Astro's page swaps,
- * `prefers-color-scheme` while the choice is "system", and other tabs. Written by hand and kept
+ * `prefers-color-scheme` while the choice is "system", and other tabs. When storage cannot be read, the
+ * theme already on the page is the choice, so it survives a ClientRouter swap. Written by hand and kept
  * small on purpose; its size is a budget in `.size-limit.json`.
  */
 export function buildHeadScript(config: EclipseConfig): string {
@@ -19,7 +20,9 @@ export function buildHeadScript(config: EclipseConfig): string {
   return (
     `(function(w,d,c){` +
     `var h=d.documentElement,m=w.matchMedia('(prefers-color-scheme: dark)');` +
-    `function p(){var v;try{v=localStorage.getItem(c.k)}catch(e){}` +
+    `function g(){var x;if(c.a=='class')c.t.forEach(function(t){h.classList.contains(t)&&(x=t)});` +
+    `else x=h.getAttribute(c.a);return c.t.indexOf(x)>-1&&x}` +
+    `function p(){var v;try{v=localStorage.getItem(c.k)}catch(e){v=g()}` +
     `return v&&(v=='system'?c.s:c.t.indexOf(v)>-1)?v:c.d}` +
     `function r(){var v=p();return v=='system'?m.matches?'dark':'light':v}` +
     `function a(e){var t=r();` +
@@ -28,7 +31,7 @@ export function buildHeadScript(config: EclipseConfig): string {
     `function u(){a(h);d.dispatchEvent(new CustomEvent('eclipse:change',{detail:{theme:r(),preference:p()}}))}` +
     `a(h);` +
     `m.addEventListener('change',function(){p()=='system'&&u()});` +
-    `w.addEventListener('storage',function(e){e.key==c.k&&u()});` +
+    `w.addEventListener('storage',function(e){(!e.key||e.key==c.k)&&u()});` +
     `d.addEventListener('astro:before-swap',function(e){a(e.newDocument.documentElement)})` +
     `})(window,document,${data})`
   )

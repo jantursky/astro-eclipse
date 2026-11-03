@@ -16,19 +16,20 @@ import { ThemeToggle } from 'astro-eclipse/components'
 
 ## Props
 
-| Prop         | Type                                  | Default                   | Notes                                           |
-| ------------ | ------------------------------------- | ------------------------- | ----------------------------------------------- |
-| `themes`     | `string[]`                            | every theme in config     | The cycle, in order. Names must be in `themes`. |
-| `transition` | `string`                              | the config's `transition` | Any built-in or `defineTransition()` name.      |
-| `duration`   | `number`                              | the config's `duration`   | Milliseconds.                                   |
-| `direction`  | `'up' \| 'down' \| 'left' \| 'right'` | `'right'`                 | For `wipe` and `blinds`.                        |
-| `class`      | `string`                              | none                      | Added next to the `eclipse-toggle` class.       |
+| Prop         | Type                                  | Default                              | Notes                                                             |
+| ------------ | ------------------------------------- | ------------------------------------ | ----------------------------------------------------------------- |
+| `themes`     | `string[]`                            | every theme in config                | The cycle, in order. Names must be in `themes`.                   |
+| `transition` | `string`                              | the config's `transition`            | Any built-in or `defineTransition()` name.                        |
+| `duration`   | `number`                              | the config's `duration`              | Milliseconds.                                                     |
+| `direction`  | `'up' \| 'down' \| 'left' \| 'right'` | `'right'`                            | For `wipe` and `blinds`.                                          |
+| `label`      | `string`                              | `Theme: {current}. Switch to {next}` | The accessible name. `{current}` and `{next}` become theme names. |
+| `class`      | `string`                              | none                                 | Added next to the `eclipse-toggle` class.                         |
 
-The default slot replaces the icon. The built-in icon is a half-filled circle that uses `currentColor`.
+Any other attribute (`id`, `aria-*`, `data-*`) is passed to the button. `themes` must be a non-empty subset of the configured themes and cannot contain `system`; a wrong value fails the build with a clear message. The default slot replaces the icon. The built-in icon is a half-filled circle that uses `currentColor`.
 
 ## Accessible name
 
-The button has no visible text, so its `aria-label` carries the meaning. Once the page loads it reads `Theme: dark. Switch to sepia`, and it is updated whenever the theme changes, including changes from other tabs, from `system` mode and from other buttons. Before the script runs it reads `Switch theme`.
+The button has no visible text, so its `aria-label` carries the meaning. Once the page loads it reads `Theme: dark. Switch to sepia`, and it is updated whenever the theme changes, including changes from other tabs, from `system` mode and from other buttons. Before the script runs it reads `Switch theme`. If you put visible text in the slot, the button keeps that text as its name and the `aria-label` is removed, so the visible and accessible names match. Translate the name with the `label` prop.
 
 Nothing is announced when the theme changes. See [accessibility](/guides/accessibility) if your site wants a live region.
 
@@ -42,4 +43,4 @@ One click listener on `document` serves every toggle on the page, so buttons tha
 
 ## Not checked
 
-The component is tested in Chromium and WebKit (keyboard, accessible name, navigation, axe in light and dark). Firefox and forced-colors mode are not checked.
+The component is tested in Chromium and WebKit (keyboard, accessible name, navigation, axe in light and dark). Firefox runs in CI but has not been run by hand, and forced-colors mode is not checked.

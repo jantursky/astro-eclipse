@@ -31,10 +31,13 @@ test('cycles every theme of the config in order', async ({ page }) => {
   await storeTheme(page, 'light')
   await page.goto('/component')
   const seen: (string | null)[] = []
+  let previous = await themeAttribute(page)
   for (let step = 0; step < 4; step += 1) {
+    const before = previous
     await page.locator(BUTTON).first().click()
-    await expect.poll(async () => (await themeAttribute(page)) !== seen.at(-1)).toBe(true)
-    seen.push(await themeAttribute(page))
+    await expect.poll(() => themeAttribute(page)).not.toBe(before)
+    previous = await themeAttribute(page)
+    seen.push(previous)
   }
   expect(seen).toEqual(['dark', 'sepia', 'forest', 'light'])
 })

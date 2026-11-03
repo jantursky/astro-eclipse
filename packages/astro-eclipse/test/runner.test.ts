@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { runTransition, type TransitionRequest } from '../src/client/runner.js'
+import { runTransition, watchNavigation, type TransitionRequest } from '../src/client/runner.js'
 import { defineTransition, getTransition, type Direction } from '../src/client/transitions.js'
 import { mockMedia, resetDom } from './helpers.js'
 
@@ -40,6 +40,8 @@ describe('runTransition', () => {
 
   beforeEach(() => {
     resetDom()
+    watchNavigation()
+    document.dispatchEvent(new Event('astro:after-preparation'))
     media = mockMedia()
     started = []
     skipNext = false
@@ -88,6 +90,27 @@ describe('runTransition', () => {
     runTransition(update, req)
     expect(update).toHaveBeenCalledOnce()
     expect(started).toHaveLength(0)
+  })
+
+  it('switches instantly while Astro fetches the next page, before it sets its own attribute', () => {
+    document.dispatchEvent(new Event('astro:before-preparation'))
+    const update = vi.fn()
+    runTransition(update, request)
+    expect(update).toHaveBeenCalledOnce()
+    expect(started).toHaveLength(0)
+
+    document.dispatchEvent(new Event('astro:after-preparation'))
+    runTransition(() => {}, request)
+    expect(started).toHaveLength(1)
+  })
+
+  it('stops waiting for a navigation that never reports back', () => {
+    vi.useFakeTimers()
+    document.dispatchEvent(new Event('astro:before-preparation'))
+    vi.advanceTimersByTime(16_000)
+    runTransition(() => {}, request)
+    expect(started).toHaveLength(1)
+    vi.useRealTimers()
   })
 
   it('animates the new snapshot with the circle effect, covering the screen', async () => {

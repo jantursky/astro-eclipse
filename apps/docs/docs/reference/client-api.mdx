@@ -23,6 +23,7 @@ interface SetThemeOptions {
   duration?: number // default: config.duration
   easing?: string // default: 'ease-in-out'
   origin?: MouseEvent | Element | { x: number; y: number } | 'center' // default: 'center'
+  direction?: 'up' | 'down' | 'left' | 'right' // default: 'right'; for wipe and blinds
 }
 ```
 
@@ -30,7 +31,7 @@ Stores the choice, applies the theme and fires `eclipse:change`. The argument is
 
 Behavior:
 
-- The choice is saved to `localStorage` under `storageKey`. If storage throws (private windows, blocked storage), it is kept in memory and lasts until reload.
+- The choice is saved to `localStorage` under `storageKey`. If storage cannot be written (private windows, blocked storage, full quota), the choice is kept in memory and wins over whatever is stored, until a write succeeds again. `duration` and `easing` are not validated here: a negative or `NaN` duration gives an instant switch.
 - If the resulting theme equals the current one, for example `system` to `light` while the system is light, the change is applied at once without an animation.
 - Otherwise it runs the transition, or switches instantly in the cases listed in [transitions](/guides/transitions#when-it-switches-instantly). The attribute or classes change inside the View Transition's update step, and `eclipse:change` is dispatched right after.
 - A second call during a running transition skips the first, and the final state matches the latest call.

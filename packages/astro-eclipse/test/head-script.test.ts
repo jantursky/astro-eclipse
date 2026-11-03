@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { buildHeadScript } from '../src/head-script.js'
-import { config, mockMedia, resetDom } from './helpers.js'
+import { blockStorage, config, mockMedia, resetDom } from './helpers.js'
 
 import type { EclipseOptions } from '../src/config.js'
 
@@ -13,9 +13,24 @@ function runHeadScript(options?: EclipseOptions): void {
 
 describe('head script', () => {
   let media: ReturnType<typeof mockMedia>
+  const added: [EventTarget, string, EventListenerOrEventListenerObject][] = []
+
   beforeEach(() => {
     resetDom()
     media = mockMedia()
+    // Each run adds listeners to the shared window and document. Record them so they can be removed.
+    for (const target of [window, document]) {
+      const original = target.addEventListener.bind(target)
+      vi.spyOn(target, 'addEventListener').mockImplementation((type, listener, options) => {
+        added.push([target, type, listener])
+        original(type, listener, options)
+      })
+    }
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+    for (const [target, type, listener] of added.splice(0)) target.removeEventListener(type, listener)
   })
 
   it('follows the system theme when nothing is stored', () => {
@@ -44,13 +59,10 @@ describe('head script', () => {
   })
 
   it('keeps working when localStorage throws', () => {
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-      throw new Error('blocked')
-    })
+    blockStorage({ read: true })
     media.setDark(true)
     runHeadScript()
     expect(document.documentElement.dataset.theme).toBe('dark')
-    vi.restoreAllMocks()
   })
 
   it('sets exactly one class in class mode', () => {
@@ -81,8 +93,40 @@ describe('head script', () => {
     localStorage.setItem('eclipse-theme', 'dark')
     window.dispatchEvent(new StorageEvent('storage', { key: 'eclipse-theme', newValue: 'dark' }))
     expect(document.documentElement.dataset.theme).toBe('dark')
+  })
+
+  it('ignores storage changes to other keys', () => {
+    runHeadScript()
+    localStorage.setItem('eclipse-theme', 'dark')
     window.dispatchEvent(new StorageEvent('storage', { key: 'other', newValue: 'x' }))
+    expect(document.documentElement.dataset.theme).toBe('light')
+  })
+
+  it('reapplies when another tab clears all of localStorage', () => {
+    localStorage.setItem('eclipse-theme', 'dark')
+    runHeadScript()
+    localStorage.clear()
+    window.dispatchEvent(new StorageEvent('storage', { key: null }))
+    expect(document.documentElement.dataset.theme).toBe('light')
+  })
+
+  it('keeps the theme on the page across a swap when storage cannot be read', () => {
+    document.documentElement.dataset.theme = 'dark'
+    blockStorage({ read: true })
+    runHeadScript({ default: 'light' })
     expect(document.documentElement.dataset.theme).toBe('dark')
+    const newDocument = document.implementation.createHTMLDocument('next')
+    document.dispatchEvent(Object.assign(new Event('astro:before-swap'), { newDocument }))
+    expect(newDocument.documentElement.dataset.theme).toBe('dark')
+  })
+
+  it('keeps the class on the page across a swap when storage cannot be read', () => {
+    document.documentElement.className = 'sepia'
+    blockStorage({ read: true })
+    runHeadScript({ themes: ['light', 'dark', 'sepia'], attribute: 'class', default: 'light' })
+    const newDocument = document.implementation.createHTMLDocument('next')
+    document.dispatchEvent(Object.assign(new Event('astro:before-swap'), { newDocument }))
+    expect([...newDocument.documentElement.classList]).toEqual(['sepia'])
   })
 
   it('sets the theme on the incoming document before an Astro swap', () => {
@@ -94,7 +138,7 @@ describe('head script', () => {
   })
 
   it('stays small', () => {
-    expect(buildHeadScript(config()).length).toBeLessThan(900)
+    expect(buildHeadScript(config()).length).toBeLessThan(1100)
   })
 
   it('escapes anything that could close the script tag', () => {

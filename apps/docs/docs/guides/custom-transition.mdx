@@ -16,6 +16,7 @@ interface TransitionDefinition {
 
 interface TransitionContext {
   origin: { x: number; y: number } // viewport pixels
+  direction: 'up' | 'down' | 'left' | 'right' // from setTheme(), default 'right'
   width: number // viewport width
   height: number // viewport height
 }

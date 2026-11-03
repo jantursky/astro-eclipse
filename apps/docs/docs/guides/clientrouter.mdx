@@ -15,10 +15,10 @@ The script and the client API are not re-created on navigation. Listeners added 
 
 If `setTheme` is called while Astro is navigating, the theme is applied at once without a View Transition. Astro is already running its own transition, and starting a second one would cancel it and leave the navigation half done.
 
-The check is whether `<html>` has the attribute `data-astro-transition`. Astro sets it while a navigation runs and removes it when the page has swapped.
+There are two checks. Astro fires `astro:before-preparation` when a navigation starts and `astro:after-preparation` once the next page is fetched, so a theme change is instant between the two (and for at most 15 seconds, in case a navigation never reports back). After the fetch, Astro starts its own view transition and sets `data-astro-transition` on `<html>` until the page has swapped, which is the second check.
 
 :::warning[The one risk]
-`data-astro-transition` is an implementation detail of Astro, not a documented API. It was verified only by reading Astro's source, not by a test against a running site. If a future Astro release renames or removes it, a theme change during a navigation would start a second View Transition. The page would still end on the right theme, but Astro's own transition could be cut short. Check this after upgrading Astro.
+`data-astro-transition` is an implementation detail of Astro, not a documented API. It was found by reading Astro's source. The end-to-end tests check the fetch phase (no view transition of ours starts) and that toggling during a slowed navigation leaves the page on a consistent theme, on Astro 7 only. If a future Astro release renames or removes it, a theme change during a navigation would start a second View Transition. The page would still end on the right theme, but Astro's own transition could be cut short. Check this after upgrading Astro.
 :::
 
 ## Buttons that get replaced

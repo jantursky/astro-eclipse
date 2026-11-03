@@ -1,7 +1,7 @@
 import { SYSTEM, supportsSystem, type EclipseConfig } from '../config.js'
 import type { Origin } from './origin.js'
 import type { Direction } from './transitions.js'
-import { noop, runTransition } from './runner.js'
+import { noop, runTransition, watchNavigation } from './runner.js'
 
 export interface ThemeChange {
   /** The theme that is applied now. Never `'system'`. */
@@ -38,19 +38,23 @@ export const CHANGE_EVENT = 'eclipse:change'
  * attribute as the inline head script, so the two never disagree.
  */
 export function createEclipse(config: EclipseConfig): Eclipse {
-  // Used when localStorage throws (private windows, blocked storage), so the page still works until reload.
-  let memory: string | undefined
+  // The choice when the last write to localStorage failed (blocked storage, full quota). It wins over whatever
+  // is stored until a write succeeds again, so the visitor's choice is never silently dropped.
+  let unsaved: string | undefined
+  if (typeof document !== 'undefined') watchNavigation()
 
   const isPreference = (value: string | null | undefined): boolean =>
     value != null && (value === SYSTEM ? supportsSystem(config) : config.themes.includes(value))
 
   function getPreference(): string {
     if (typeof document === 'undefined') return config.default
-    let stored: string | null | undefined = memory
-    try {
-      stored = localStorage.getItem(config.storageKey) ?? memory
-    } catch {
-      // Storage is unavailable; fall back to memory.
+    let stored: string | null | undefined = unsaved
+    if (stored === undefined) {
+      try {
+        stored = localStorage.getItem(config.storageKey)
+      } catch {
+        // Storage is unreadable and nothing was chosen yet: use the default.
+      }
     }
     return stored != null && isPreference(stored) ? stored : config.default
   }
@@ -86,11 +90,11 @@ export function createEclipse(config: EclipseConfig): Eclipse {
       )
     }
     const before = getTheme()
-    memory = preference
     try {
       localStorage.setItem(config.storageKey, preference)
+      unsaved = undefined
     } catch {
-      // Storage is unavailable; the choice lasts until reload.
+      unsaved = preference
     }
 
     // Applies whatever is stored when it runs, so overlapping calls always end on the latest choice.

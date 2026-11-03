@@ -131,6 +131,23 @@ test('toggling during a ClientRouter navigation does not break the navigation', 
   expect(errors).toEqual([])
 })
 
+test('a theme change while Astro fetches the next page starts no view transition of ours', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'no-preference' })
+  await page.addInitScript(countViewTransitions)
+  await page.route('**/navigation/b', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    await route.continue()
+  })
+  await page.goto('/navigation/a')
+  await page.locator('nav[aria-label="Navigation test pages"]').getByRole('link', { name: 'Page B' }).click()
+  await page.locator(TOGGLE).click()
+  // The page has not been fetched yet, so Astro has not started its transition either. Any count is ours.
+  await expect.poll(() => themeAttribute(page)).toBe('dark')
+  expect(await page.evaluate(() => window.__viewTransitions)).toBe(0)
+  await expect(page.getByTestId('page-id')).toHaveText('Page B')
+  expect(await themeAttribute(page)).toBe('dark')
+})
+
 test('system mode follows the OS color scheme live', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' })
   await page.goto('/')

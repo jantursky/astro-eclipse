@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createEclipse, type ThemeChange } from '../src/client/core.js'
-import { config, mockMedia, resetDom } from './helpers.js'
+import { blockStorage, config, mockMedia, resetDom } from './helpers.js'
 
 import type { EclipseOptions } from '../src/config.js'
 
@@ -16,6 +16,9 @@ describe('createEclipse', () => {
   beforeEach(() => {
     resetDom()
     media = mockMedia()
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
   describe('reading', () => {
@@ -93,18 +96,27 @@ describe('createEclipse', () => {
       expect(changes).toEqual([{ theme: 'dark', preference: 'dark' }])
     })
 
+    it('keeps a new choice when the write fails over an older stored value', () => {
+      localStorage.setItem('eclipse-theme', 'dark')
+      const eclipse = setup()
+      blockStorage({ write: true })
+      eclipse.setTheme('light')
+      expect(eclipse.getTheme()).toBe('light')
+      expect(theme()).toBe('light')
+      vi.unstubAllGlobals()
+      // A write that works again takes over from the unsaved choice.
+      eclipse.setTheme('dark')
+      expect(localStorage.getItem('eclipse-theme')).toBe('dark')
+      localStorage.setItem('eclipse-theme', 'light')
+      expect(eclipse.getTheme()).toBe('light')
+    })
+
     it('keeps the choice in memory when localStorage throws', () => {
-      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-        throw new Error('blocked')
-      })
-      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-        throw new Error('blocked')
-      })
+      blockStorage({ read: true, write: true })
       const eclipse = setup()
       eclipse.setTheme('dark')
       expect(theme()).toBe('dark')
       expect(eclipse.getTheme()).toBe('dark')
-      vi.restoreAllMocks()
     })
   })
 

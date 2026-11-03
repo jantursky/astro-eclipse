@@ -24,7 +24,7 @@ The script never runs an animation. The View Transition belongs to `setTheme`, w
 
 Reading `localStorage` is wrapped in a `try`. In a private window or with storage blocked, the read throws, nothing is stored, and the script falls back to `default`. If `default` is `system`, the page follows the system preference and keeps following it.
 
-The client API handles the same failure by keeping the visitor's choice in memory until reload. The choice then applies for the current page only, and the other-tab sync does not work, because no `storage` event is fired.
+When storage cannot be read, the theme already on the page is treated as the choice, so it survives `ClientRouter` swaps. The client API keeps a choice it could not save in memory until a write works again. Other-tab sync does not work without storage, because no `storage` event is fired. A `storage` event with no key (another tab called `localStorage.clear()`) re-applies the theme too.
 
 ## Configured values are inlined
 

@@ -9,13 +9,31 @@ export interface Props {
   duration?: number
   /** Which way `wipe` and `blinds` travel. */
   direction?: 'up' | 'down' | 'left' | 'right'
+  /** The accessible name. `{current}` and `{next}` become theme names. Default `Theme: {current}. Switch to {next}`. */
+  label?: string
   class?: string
 }
 
-const { themes = config.themes, transition, duration, direction, class: className } = Astro.props
+const {
+  themes = config.themes,
+  transition,
+  duration,
+  direction,
+  label = 'Theme: {current}. Switch to {next}',
+  class: className,
+  ...attributes
+} = Astro.props
+
+const unknown = themes.filter((theme) => !config.themes.includes(theme))
+if (unknown.length > 0 || themes.length === 0) {
+  throw new Error(
+    `astro-eclipse: ThemeToggle \`themes\` must be a non-empty subset of ${config.themes.join(', ')}. Got: ${themes.join(', ') || 'none'}.`,
+  )
+}
 ---
 
 <button
+  {...attributes}
   type="button"
   class:list={['eclipse-toggle', className]}
   data-eclipse-toggle
@@ -23,6 +41,7 @@ const { themes = config.themes, transition, duration, direction, class: classNam
   data-transition={transition}
   data-duration={duration}
   data-direction={direction}
+  data-label={label}
   aria-label="Switch theme"
 >
   <slot>
@@ -44,10 +63,21 @@ const { themes = config.themes, transition, duration, direction, class: classNam
     return cycle[(cycle.indexOf(getTheme()) + 1) % cycle.length]
   }
 
-  /** The name states where the page is and where the button goes, e.g. "Theme: dark. Switch to sepia". */
+  /**
+   * The name states where the page is and where the button goes, e.g. "Theme: dark. Switch to sepia".
+   * A button with visible text of its own keeps that text as its name, so the visible and accessible names match.
+   */
   function label(): void {
     for (const button of document.querySelectorAll<HTMLElement>(SELECTOR)) {
-      button.setAttribute('aria-label', `Theme: ${getTheme()}. Switch to ${nextTheme(button) ?? getTheme()}`)
+      if (button.textContent.trim() !== '') {
+        button.removeAttribute('aria-label')
+        continue
+      }
+      const current = getTheme()
+      const text = (button.dataset.label ?? '')
+        .replaceAll('{current}', current)
+        .replaceAll('{next}', nextTheme(button) ?? current)
+      button.setAttribute('aria-label', text)
     }
   }
 

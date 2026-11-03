@@ -27,6 +27,30 @@ export function mockMedia(initial: { dark?: boolean; reduce?: boolean } = {}) {
   }
 }
 
+/**
+ * Replace localStorage with one that throws on the chosen operations. Spying on `Storage.prototype` does not
+ * reach happy-dom's localStorage, so the whole object is swapped. `vi.unstubAllGlobals()` puts it back.
+ */
+export function blockStorage({ read = false, write = false }: { read?: boolean; write?: boolean }): void {
+  const real = localStorage
+  const fail = (): never => {
+    throw new DOMException('blocked', 'SecurityError')
+  }
+  vi.stubGlobal('localStorage', {
+    getItem: (key: string) => (read ? fail() : real.getItem(key)),
+    setItem: (key: string, value: string) => {
+      if (write) fail()
+      real.setItem(key, value)
+    },
+    removeItem: (key: string) => {
+      real.removeItem(key)
+    },
+    clear: () => {
+      real.clear()
+    },
+  })
+}
+
 export const config = (options?: EclipseOptions) => resolveConfig(options)
 
 export function resetDom(): void {

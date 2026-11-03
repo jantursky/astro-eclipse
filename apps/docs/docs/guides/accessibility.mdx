@@ -15,7 +15,7 @@ A toggle that only shows an icon needs an accessible name:
 </button>
 ```
 
-Keep the name the same whichever theme is active. Changing the label while also exposing a pressed state makes screen readers say both. If you want a state, use `aria-pressed`:
+For a button you write yourself, keep the name the same whichever theme is active. (`ThemeToggle` takes the other route: its name always says where the button goes, and it has no pressed state, so the two are never combined.) Changing the label while also exposing a pressed state makes screen readers say both. If you want a state, use `aria-pressed`:
 
 ```html
 <button type="button" id="theme-button" aria-pressed="false">Dark mode</button>
