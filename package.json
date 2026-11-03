@@ -29,7 +29,7 @@
     "format:check": "prettier --check .",
     "sync:readme": "node scripts/readme.js",
     "gifs": "node scripts/gifs.js",
-    "check": "bun run format:check && bun run lint && bun run typecheck && bun run test:coverage"
+    "check": "bun run format:check && bun run typecheck && bun run lint && bun run test:coverage"
   },
   "devDependencies": {
     "@eslint/js": "^10",
