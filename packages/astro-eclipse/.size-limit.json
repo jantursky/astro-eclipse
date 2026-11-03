@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Inline head script (default config)",
+    "path": ".size/head-inline.js",
+    "gzip": true,
+    "limit": "700 B"
+  },
+  {
+    "name": "Client API",
+    "path": "dist/client/index.js",
+    "import": "*",
+    "ignore": ["virtual:astro-eclipse/config"],
+    "gzip": true,
+    "limit": "2 kB"
+  }
+]

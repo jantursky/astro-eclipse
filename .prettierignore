@@ -1,0 +1,11 @@
+dist/
+coverage/
+node_modules/
+bun.lock
+.blume/
+.blume-verify/
+.astro/
+apps/docs/docs/_generated/
+test-results/
+playwright-report/
+.size/

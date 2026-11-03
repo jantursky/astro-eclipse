@@ -1,0 +1,82 @@
+{
+  "name": "astro-eclipse",
+  "version": "1.0.0",
+  "description": "Astro integration for theme switching with animated View Transitions: circle reveal, wipe, blinds and more. No flash, survives ClientRouter navigation.",
+  "license": "MIT",
+  "author": {
+    "name": "Jan Tursky",
+    "email": "jan.tursky@gmail.com",
+    "url": "https://jantursky.com"
+  },
+  "homepage": "https://astro-eclipse-docs.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jantursky/astro-eclipse.git",
+    "directory": "packages/astro-eclipse"
+  },
+  "bugs": {
+    "url": "https://github.com/jantursky/astro-eclipse/issues"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "default": "./dist/client/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12"
+  },
+  "keywords": [
+    "astro-integration",
+    "astro",
+    "withastro",
+    "theme",
+    "dark-mode",
+    "view-transitions",
+    "theme-transition",
+    "color-scheme"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/measure-head-script.js && size-limit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint:package": "publint --strict && attw --pack . --profile esm-only",
+    "test:pack": "node scripts/pack-test.js",
+    "size": "size-limit"
+  },
+  "peerDependencies": {
+    "astro": "^5.0.0 || ^6.0.0 || ^7.0.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@size-limit/esbuild": "^14",
+    "@size-limit/file": "^14",
+    "@types/node": "^22",
+    "@vitest/coverage-v8": "^5",
+    "astro": "^7.4.5",
+    "happy-dom": "^21.0.4",
+    "publint": "^0.3.25",
+    "size-limit": "^14",
+    "typescript": "~5.9.3",
+    "vitest": "^5"
+  }
+}
