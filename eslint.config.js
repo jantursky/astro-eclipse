@@ -40,6 +40,13 @@ export default defineConfig(
   },
 
   {
+    // The library's component has an inline <script>; the Astro parser cannot hand it a type program, so lint it without types.
+    files: ['packages/*/src/components/**/*.astro'],
+    extends: [tseslint.configs.disableTypeChecked],
+    languageOptions: { parserOptions: { projectService: false, project: false } },
+  },
+
+  {
     // The Astro parser resolves types in templates poorly: `.map()` over typed arrays reports `error` types.
     files: ['**/*.astro'],
     rules: { '@typescript-eslint/no-unsafe-return': 'off' },
