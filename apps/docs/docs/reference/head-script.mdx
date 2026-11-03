@@ -1,0 +1,37 @@
+---
+title: Head script
+description: What the inline script injected into every page does, how big it is and how it handles storage failure.
+---
+
+The integration injects one inline `<script>` into the `<head>` of every page. It is written by hand, runs before first paint and has no dependencies. With the default config it is about 435 B gzipped.
+
+The size is checked on every library build by size-limit, against a budget of 700 B. Other configs differ by the length of their theme names and storage key.
+
+## What it does
+
+1. Reads the stored choice from `localStorage`. A value that is not one of your themes (or `system`, when allowed) is ignored and `default` is used.
+2. Resolves `system` to `light` or `dark` with `matchMedia('(prefers-color-scheme: dark)')`.
+3. Applies the theme to `<html>`: sets the attribute, or toggles one class per theme when `attribute` is `class`. This happens before the body is parsed, so the first paint is right.
+4. Listens for changes of `prefers-color-scheme` and, while the choice is `system`, re-applies the theme and dispatches `eclipse:change`.
+5. Listens for the `storage` event on the configured key and does the same when another tab changes the choice.
+6. Listens for `astro:before-swap` and applies the theme to `event.newDocument.documentElement`, which is how [ClientRouter](/guides/clientrouter) navigation keeps the theme.
+
+The `eclipse:change` event is dispatched on `document` with `detail: { theme, preference }`. It is the same event `onThemeChange` listens to.
+
+The script never runs an animation. The View Transition belongs to `setTheme`, which is part of the [client API](/reference/client-api).
+
+## When storage fails
+
+Reading `localStorage` is wrapped in a `try`. In a private window or with storage blocked, the read throws, nothing is stored, and the script falls back to `default`. If `default` is `system`, the page follows the system preference and keeps following it.
+
+The client API handles the same failure by keeping the visitor's choice in memory until reload. The choice then applies for the current page only, and the other-tab sync does not work, because no `storage` event is fired.
+
+## Configured values are inlined
+
+The theme names, default, attribute, key and whether `system` is allowed are written into the script as JSON from your config, with `<` escaped. It does not read the config at runtime.
+
+## Content security policy
+
+Because the script is inline, a strict `script-src` without `'unsafe-inline'` blocks it unless you allow it with a hash or nonce. This has not been tested here against Astro's CSP support.
+
+Related: [config](/reference/config), [ClientRouter](/guides/clientrouter), [getting started](/getting-started).

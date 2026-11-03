@@ -1,0 +1,93 @@
+---
+title: Getting started
+description: Install astro-eclipse, add the integration, write the theme CSS and switch themes from a button.
+sidebar:
+  order: 2
+---
+
+## Install
+
+```package-install
+astro-eclipse
+```
+
+It needs Astro 5, 6 or 7 (`^5 || ^6 || ^7`). The package is ESM only.
+
+## Add the integration
+
+```js astro.config.mjs
+import { defineConfig } from 'astro/config'
+import eclipse from 'astro-eclipse'
+
+export default defineConfig({
+  integrations: [eclipse()],
+})
+```
+
+With no options the themes are `light` and `dark`, the visitor's system preference is the default, the theme is written to `data-theme` on `<html>`, and the choice is stored in `localStorage` under `eclipse-theme`. Every option is listed in the [config reference](/reference/config).
+
+The integration injects a small inline script into every `<head>`. It runs before first paint, which is why a reload never shows the wrong theme. See [the head script](/reference/head-script).
+
+## Write the theme CSS
+
+astro-eclipse ships no palette. It sets `data-theme="light"` or `data-theme="dark"` on `<html>`, and you select on it:
+
+```css src/styles/global.css
+:root {
+  color-scheme: light;
+  --bg: #fff;
+  --fg: #111;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #000;
+  --fg: #eee;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+```
+
+Import the file in your layout. [CSS variables](/guides/css-variables) covers more patterns, and [Tailwind](/guides/tailwind) the class-based setup.
+
+## Switch the theme
+
+`toggleTheme()` moves to the next theme in `themes`. Passing the click event as `origin` makes the reveal start where the visitor clicked.
+
+```astro src/components/ThemeButton.astro
+<button type="button" id="theme-button" aria-label="Toggle dark mode">
+  Theme
+</button>
+
+<script>
+  import { toggleTheme } from 'astro-eclipse/client'
+
+  document.querySelector('#theme-button')?.addEventListener('click', (event) => {
+    toggleTheme({ origin: event })
+  })
+</script>
+```
+
+To pick a theme by name, or to let the visitor go back to following the system, use `setTheme`:
+
+```ts
+import { setTheme } from 'astro-eclipse/client'
+
+setTheme('dark')
+setTheme('system') // needs the themes "light" and "dark"
+```
+
+`setTheme` throws a `RangeError` for a name that is not in `themes`. The full list of functions is in the [client API](/reference/client-api).
+
+## Next
+
+- [Transitions](/guides/transitions): the built-in effects and how to tune them.
+- [ClientRouter](/guides/clientrouter): keeping the theme across navigation.
+- [Accessibility](/guides/accessibility): naming the button and announcing changes.
+
+## Not covered yet
+
+A ready-made toggle component is not covered here yet. Write the button yourself, as above.

@@ -1,0 +1,81 @@
+---
+title: Config
+description: Every option of the eclipse() integration, with types, defaults and the errors it throws.
+---
+
+```js astro.config.mjs
+import { defineConfig } from 'astro/config'
+import eclipse from 'astro-eclipse'
+
+export default defineConfig({
+  integrations: [
+    eclipse({
+      themes: ['light', 'dark'],
+      default: 'system',
+      attribute: 'data-theme',
+      storageKey: 'eclipse-theme',
+      transition: 'circle',
+      duration: 500,
+    }),
+  ],
+})
+```
+
+Every option is optional. The values above are the defaults.
+
+```ts
+interface EclipseOptions {
+  themes?: string[]
+  default?: string
+  attribute?: 'class' | `data-${string}`
+  storageKey?: string
+  transition?: string
+  duration?: number
+}
+```
+
+## Options
+
+| Option       | Type                                | Default             | Description                                                                                                                   |
+| ------------ | ----------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `themes`     | `string[]`                          | `['light', 'dark']` | Theme names. Each is a value of `attribute`, or a class. `toggleTheme()` cycles them in this order.                           |
+| `default`    | `string`                            | `'system'`          | The theme used before the visitor chooses. `'system'` follows `prefers-color-scheme` and needs the themes `light` and `dark`. |
+| `attribute`  | `'class'` or `` `data-${string}` `` | `'data-theme'`      | `'class'` toggles a class per theme on `<html>`. A `data-*` name sets that attribute.                                         |
+| `storageKey` | `string`                            | `'eclipse-theme'`   | The `localStorage` key that holds the visitor's choice.                                                                       |
+| `transition` | `string`                            | `'circle'`          | The effect used when a call does not name one.                                                                                |
+| `duration`   | `number`                            | `500`               | Effect length in milliseconds. `0` turns the animation off.                                                                   |
+
+The value is also checked when the config loads, so a plain JavaScript config gets the same error.
+
+## Details
+
+- **Theme names** may use letters, digits and dashes and must start with a letter. `system` is reserved.
+- **`attribute`** `data-*` names must be lowercase letters, digits and dashes after `data-`.
+- **`default`** other than `system` must be one of `themes`.
+- **`transition`** is not validated against the registered effects. An unknown name makes every theme change instant. See [transitions](/guides/transitions).
+- **`duration`** is the default for `setTheme` and `toggleTheme`; either can override it per call.
+- Changing `themes`, `attribute` or `storageKey` after visitors have stored a choice: a stored value that is not in `themes` is ignored and `default` is used.
+
+## Validation errors
+
+An invalid config throws while Astro loads the config, before the build or dev server starts.
+
+| Condition                                      | Error message                                                                                         |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `themes: []`                                   | ``astro-eclipse: `themes` needs at least one theme.``                                                 |
+| Invalid theme name                             | `astro-eclipse: invalid theme name "<name>". Use letters, digits and dashes, starting with a letter.` |
+| A theme named `system`                         | `astro-eclipse: "system" is reserved and cannot be a theme name.`                                     |
+| Repeated theme                                 | ``astro-eclipse: `themes` contains duplicates.``                                                      |
+| `default: 'system'` without `light` and `dark` | ``astro-eclipse: `default: "system"` needs the themes "light" and "dark".``                           |
+| `default` not in `themes`                      | ``astro-eclipse: `default` "<value>" is not in `themes`.``                                            |
+| Invalid `attribute`                            | ``astro-eclipse: `attribute` must be "class" or "data-*", got "<value>".``                            |
+| `storageKey: ''`                               | ``astro-eclipse: `storageKey` cannot be empty.``                                                      |
+| `duration` negative, `NaN` or infinite         | ``astro-eclipse: `duration` must be a number of milliseconds, 0 or more.``                            |
+
+A set of themes without `light` and `dark` must set `default` to one of them, because the default is `system` otherwise:
+
+```js
+eclipse({ themes: ['paper', 'ink'], default: 'paper' })
+```
+
+Related: [client API](/reference/client-api), [head script](/reference/head-script), [getting started](/getting-started).

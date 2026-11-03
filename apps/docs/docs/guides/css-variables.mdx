@@ -1,0 +1,71 @@
+---
+title: CSS variables
+description: Define each theme with custom properties selected by the data-theme attribute.
+---
+
+By default astro-eclipse sets `data-theme` on `<html>`. A theme is a block of custom properties selected on that attribute. Everything else in your CSS reads the variables.
+
+```css src/styles/themes.css
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --fg: #111111;
+  --border: #d9d9d4;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #000000;
+  --fg: #eeeeee;
+  --border: #333333;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.card {
+  border: 1px solid var(--border);
+}
+```
+
+Put the light values on plain `:root` so the page still looks right if the attribute is missing, for example with JavaScript off. The inline script sets the attribute on the very first parse, so with JavaScript on the page never paints without it.
+
+## More than two themes
+
+Each name in `themes` becomes a value of the attribute:
+
+```js astro.config.mjs
+eclipse({ themes: ['light', 'dark', 'sepia'], default: 'light' })
+```
+
+```css
+:root[data-theme='sepia'] {
+  color-scheme: light;
+  --bg: #f4ecd8;
+  --fg: #3b2f1e;
+}
+```
+
+`default: 'system'` needs both `light` and `dark` in `themes`, so a set without them has to name a default theme. `toggleTheme()` cycles through the list in order.
+
+## A different attribute
+
+Use `attribute` to set another `data-*` attribute, or `'class'` for class-based CSS:
+
+```js astro.config.mjs
+eclipse({ attribute: 'data-mode' })
+```
+
+```css
+:root[data-mode='dark'] {
+  --bg: #000;
+}
+```
+
+The class setup is described in the [Tailwind guide](/guides/tailwind). All options are in the [config reference](/reference/config).
+
+## Smooth the rest of the page
+
+The View Transition animates the change for the whole page, so you do not need CSS `transition` rules on colors. Adding them can make elements fade inside the reveal as well, which has not been checked here. Leave them out for theme changes unless you want that.

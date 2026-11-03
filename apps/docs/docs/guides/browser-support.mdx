@@ -1,0 +1,33 @@
+---
+title: Browser support
+description: Which browsers run the animation, what happens without it, and what has been checked.
+---
+
+The animation needs `document.startViewTransition`. Without it the theme still changes, instantly. The theme logic itself (attribute, storage, `system`) uses `localStorage`, `matchMedia` and custom events, which every current browser has.
+
+:::warning
+The versions in the table come from [MDN browser compatibility data](https://developer.mozilla.org/en-US/docs/Web/API/Document/startViewTransition#browser_compatibility). They are not the result of our tests. Every browser in the "Checked on" column is unverified until a real run says otherwise.
+:::
+
+| Browser | startViewTransition | Behavior without it | Checked on |
+| ------- | ------------------- | ------------------- | ---------- |
+| Chrome  | 111 (MDN)           | Instant switch      | unverified |
+| Edge    | 111 (MDN)           | Instant switch      | unverified |
+| Safari  | 18 (MDN)            | Instant switch      | unverified |
+| Firefox | 144 (MDN)           | Instant switch      | unverified |
+
+"Instant switch" is what the code does when the function is missing: it applies the theme and fires `eclipse:change`, with no animation. That path has not been run in the listed browsers.
+
+## Feature detection
+
+astro-eclipse tests `typeof document.startViewTransition === 'function'` on every call. You do not need your own check. If you want to show something different when animation is unavailable:
+
+```ts
+const canAnimate = typeof document.startViewTransition === 'function'
+```
+
+## Other reasons for no animation
+
+Reduced motion, a zero duration, an unknown effect name and an active `ClientRouter` navigation also give an instant switch. They are listed under [transitions](/guides/transitions#when-it-switches-instantly).
+
+Related: [accessibility](/guides/accessibility), [clip-path based effects](/guides/custom-transition).

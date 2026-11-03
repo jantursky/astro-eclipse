@@ -40,7 +40,7 @@ export default defineConfig(
   },
 
   {
-    files: ['**/test/**/*.ts'],
+    files: ['**/test/**/*.ts', '**/e2e/**/*.ts'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-empty-function': 'off',
@@ -48,7 +48,7 @@ export default defineConfig(
   },
 
   {
-    files: ['**/*.js'],
+    files: ['**/*.{js,mjs,cjs}'],
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: { ...globals.node } },
   },

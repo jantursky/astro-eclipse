@@ -3,7 +3,7 @@ declare module 'virtual:astro-eclipse/config' {
   const config: {
     themes: string[]
     default: string
-    attribute: string
+    attribute: 'class' | `data-${string}`
     storageKey: string
     transition: string
     duration: number

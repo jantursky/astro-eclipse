@@ -1,0 +1,80 @@
+---
+title: Accessibility
+description: Naming the toggle, announcing theme changes, reduced motion, forced colors and contrast.
+---
+
+astro-eclipse changes an attribute and runs an animation. The rest of the accessibility work is in the markup and CSS you write.
+
+## Name the button
+
+A toggle that only shows an icon needs an accessible name:
+
+```html
+<button type="button" id="theme-button" aria-label="Toggle dark mode">
+  <svg aria-hidden="true" focusable="false"><!-- icon --></svg>
+</button>
+```
+
+Keep the name the same whichever theme is active. Changing the label while also exposing a pressed state makes screen readers say both. If you want a state, use `aria-pressed`:
+
+```html
+<button type="button" id="theme-button" aria-pressed="false">Dark mode</button>
+```
+
+```ts
+import { getTheme, onThemeChange, toggleTheme } from 'astro-eclipse/client'
+
+const button = document.querySelector<HTMLButtonElement>('#theme-button')!
+const sync = () => button.setAttribute('aria-pressed', String(getTheme() === 'dark'))
+
+button.addEventListener('click', (event) => toggleTheme({ origin: event }))
+onThemeChange(sync)
+sync()
+```
+
+A native `<button>` already works with Enter and Space. A keyboard click reveals from the center of the button.
+
+## Announcements
+
+astro-eclipse announces nothing. The change is visible, and `aria-pressed` on the button already tells a screen reader user the state when they focus it. If you want a spoken confirmation, add a polite live region and write to it on change:
+
+```html
+<div id="theme-status" role="status" class="visually-hidden"></div>
+```
+
+```css
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+```
+
+```ts
+import { onThemeChange } from 'astro-eclipse/client'
+
+const status = document.querySelector('#theme-status')!
+
+onThemeChange(({ theme }) => {
+  status.textContent = `${theme} theme`
+})
+```
+
+`onThemeChange` also fires when the system preference changes while the choice is `system`, and when another tab changes the theme. Decide whether you want those announced; the callback receives `preference` too if you want to announce only explicit choices.
+
+## Reduced motion
+
+When the visitor has `prefers-reduced-motion: reduce`, the theme switches instantly and no View Transition starts. You do not need extra code. The preference is read when `setTheme` is called.
+
+## Forced colors
+
+In Windows High Contrast and other forced-colors modes the browser replaces your colors with the visitor's palette. Your theme CSS has little effect there, and the switch has nothing visible to reveal. astro-eclipse does nothing special for this mode. Use system colors for anything that must stay visible (`ButtonText`, `Canvas`), and do not carry meaning in color alone. This has not been checked in a forced-colors browser.
+
+## Contrast
+
+Contrast is the job of your themes. The library does not check it. Test text and interactive elements in every theme against WCAG 4.5:1 for body text and 3:1 for large text and UI components, and check focus rings in each theme.
+
+Related: [transitions](/guides/transitions), [browser support](/guides/browser-support), [client API](/reference/client-api).

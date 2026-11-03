@@ -1,0 +1,65 @@
+---
+title: Tailwind
+description: Use dark mode utilities with astro-eclipse, with the class attribute and the Tailwind 4 custom variant.
+---
+
+Tailwind's `dark:` utilities need to know what "dark" means in your page. There are two setups. Both work with astro-eclipse; pick one.
+
+## Option 1: class attribute
+
+Tell astro-eclipse to toggle classes on `<html>` instead of setting `data-theme`:
+
+```js astro.config.mjs
+import eclipse from 'astro-eclipse'
+
+export default defineConfig({
+  integrations: [eclipse({ attribute: 'class' })],
+})
+```
+
+With `themes: ['light', 'dark']` the element ends up with the class `light` or `dark`, and the other one is removed. Any other classes on `<html>` are left alone.
+
+Then declare the variant in Tailwind 4:
+
+```css src/styles/global.css
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+```
+
+```html
+<body class="bg-white text-black dark:bg-black dark:text-white"></body>
+```
+
+## Option 2: keep data-theme
+
+If you would rather keep the default attribute, point the variant at it. No `attribute` option is needed:
+
+```js astro.config.mjs
+export default defineConfig({
+  integrations: [eclipse()],
+})
+```
+
+```css src/styles/global.css
+@import 'tailwindcss';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+```
+
+## Which config to choose
+
+| Setup     | astro-eclipse config              | Tailwind 4 CSS                                                                |
+| --------- | --------------------------------- | ----------------------------------------------------------------------------- |
+| Class     | `eclipse({ attribute: 'class' })` | `@custom-variant dark (&:where(.dark, .dark *));`                             |
+| Attribute | `eclipse()`                       | `@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));` |
+
+The attribute setup keeps your CSS variables and Tailwind on the same selector, which makes it the simpler one when you use both. The class setup matches what most Tailwind tutorials show.
+
+The names in the variant must match your `themes`. If you rename `dark` to `night`, the selector becomes `.night` or `[data-theme='night']`.
+
+:::note
+Tailwind 4 with the variant above is what these snippets are written for. They have not been run against a Tailwind build in this repository. For Tailwind 3 see its own `darkMode` documentation.
+:::
+
+Related: [CSS variables](/guides/css-variables), [config reference](/reference/config).

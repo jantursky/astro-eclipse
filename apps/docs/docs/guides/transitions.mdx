@@ -1,0 +1,80 @@
+---
+title: Transitions
+description: The built-in effects, and how to set the origin, duration and easing, with the cases where the theme switches instantly.
+---
+
+A theme change runs inside `document.startViewTransition`. The browser snapshots the page before and after, and astro-eclipse animates the two snapshots with the Web Animations API. The theme itself changes at the start; the animation only decides how the new one is revealed.
+
+## Built-in effects
+
+| Name               | What it does                                                                    |
+| ------------------ | ------------------------------------------------------------------------------- |
+| `circle` (default) | The new theme grows as a circle from the origin until it covers the screen.     |
+| `circle-inverse`   | The old theme shrinks to the origin as a circle and uncovers the new one below. |
+| `fade`             | The old theme fades out while the new one fades in. The origin is ignored.      |
+
+More effects are added over time. To make your own, see [custom transitions](/guides/custom-transition).
+
+## Choose an effect
+
+Set the default for the whole site in the config:
+
+```js astro.config.mjs
+eclipse({ transition: 'circle-inverse' })
+```
+
+Or choose per call:
+
+```ts
+import { setTheme } from 'astro-eclipse/client'
+
+setTheme('dark', { transition: 'fade' })
+```
+
+## Origin
+
+The origin is where a reveal starts. Pass whichever form is handy:
+
+```ts
+import { setTheme, toggleTheme } from 'astro-eclipse/client'
+
+button.addEventListener('click', (event) => toggleTheme({ origin: event })) // click position
+setTheme('dark', { origin: button }) // center of an element
+setTheme('dark', { origin: { x: 120, y: 40 } }) // viewport pixels
+setTheme('dark', { origin: 'center' }) // middle of the screen, also the default
+```
+
+A click made with the keyboard (Enter or Space on a button) has no pointer position. astro-eclipse reveals from the center of the button in that case.
+
+## Duration and easing
+
+`duration` is in milliseconds. It defaults to the config's `duration`, which defaults to 500. `easing` is any CSS easing string and defaults to `ease-in-out`.
+
+```ts
+setTheme('dark', { duration: 800, easing: 'cubic-bezier(0.2, 0, 0, 1)' })
+```
+
+The config accepts `duration` as well. There is no config option for `easing`.
+
+## When it switches instantly
+
+The theme always changes. The animation is skipped, and the change is applied at once, when any of these is true:
+
+- `document.startViewTransition` does not exist in the browser. See [browser support](/guides/browser-support).
+- The visitor has `prefers-reduced-motion: reduce` set.
+- `duration` is 0.
+- The effect name is not registered. This does not throw.
+- Astro's `ClientRouter` is in the middle of a navigation. See [ClientRouter](/guides/clientrouter).
+- The resolved theme did not change, for example switching from `system` to `light` while the system is already light.
+
+Reduced motion is read when `setTheme` is called, not watched live.
+
+## Calling it again while one is running
+
+A second `setTheme` during a running transition skips the first one. The first animation is cut short, and the page ends on the theme of the latest call. There is no function that cancels a transition without starting another one.
+
+## Style the transition yourself
+
+astro-eclipse switches off the browser's default cross-fade for `::view-transition-old(root)` and `::view-transition-new(root)` for the length of each transition and removes that style afterwards. Do not add your own animations on those pseudo-elements for the root, or they will fight the effect.
+
+Related: [accessibility](/guides/accessibility), [client API](/reference/client-api).

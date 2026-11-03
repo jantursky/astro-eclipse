@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolveConfig } from '../src/config.js'
+import { resolveConfig, type EclipseOptions } from '../src/config.js'
 
 describe('resolveConfig', () => {
   it('fills in the defaults', () => {
@@ -37,6 +37,7 @@ describe('resolveConfig', () => {
     [{ duration: -1 }, /duration/],
     [{ duration: Number.NaN }, /duration/],
   ])('rejects %j', (options, message) => {
-    expect(() => resolveConfig(options)).toThrow(message)
+    // Invalid values are the point of this test, so they bypass the option types.
+    expect(() => resolveConfig(options as EclipseOptions)).toThrow(message)
   })
 })

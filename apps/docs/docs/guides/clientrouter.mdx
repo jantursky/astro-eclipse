@@ -1,0 +1,62 @@
+---
+title: ClientRouter
+description: How the theme survives navigation with Astro's ClientRouter, and the one assumption this relies on.
+---
+
+With Astro's [`ClientRouter`](https://docs.astro.build/en/guides/view-transitions/) a navigation swaps the DOM instead of loading a new document. The incoming page comes from the server without a theme, so something has to put it back. astro-eclipse handles it with no setup beyond adding `ClientRouter` to your layout.
+
+## How the theme survives
+
+The inline [head script](/reference/head-script) listens for `astro:before-swap`. That event fires before the swap and exposes the incoming document as `event.newDocument`. The script applies the current theme to `newDocument.documentElement` (the attribute, or the classes), so the swapped-in page already has it when it is attached. The page never paints with the wrong theme.
+
+The script and the client API are not re-created on navigation. Listeners added by `onThemeChange` stay valid as long as the document does.
+
+## Theme changes during a navigation
+
+If `setTheme` is called while Astro is navigating, the theme is applied at once without a View Transition. Astro is already running its own transition, and starting a second one would cancel it and leave the navigation half done.
+
+The check is whether `<html>` has the attribute `data-astro-transition`. Astro sets it while a navigation runs and removes it when the page has swapped.
+
+:::warning[The one risk]
+`data-astro-transition` is an implementation detail of Astro, not a documented API. It was verified only by reading Astro's source, not by a test against a running site. If a future Astro release renames or removes it, a theme change during a navigation would start a second View Transition. The page would still end on the right theme, but Astro's own transition could be cut short. Check this after upgrading Astro.
+:::
+
+## Buttons that get replaced
+
+A button inside the swapped content is a new element after each navigation, and a script bound to the old one is gone. Bind once on `document` and match the button there:
+
+```astro src/layouts/Layout.astro
+---
+import { ClientRouter } from 'astro:transitions'
+---
+
+<html lang="en">
+  <head>
+    <ClientRouter />
+  </head>
+  <body>
+    <slot />
+    <script>
+      import { toggleTheme } from 'astro-eclipse/client'
+
+      document.addEventListener('click', (event) => {
+        if (event.target instanceof Element && event.target.closest('[data-theme-toggle]')) {
+          toggleTheme({ origin: event })
+        }
+      })
+    </script>
+  </body>
+</html>
+```
+
+```html
+<button type="button" data-theme-toggle aria-label="Toggle dark mode">Theme</button>
+```
+
+Bundled `<script>` tags in Astro run once, so the listener is not added twice.
+
+## Persisted islands
+
+An island kept across navigation with `transition:persist` keeps its state, and so does its `onThemeChange` subscription. The [hooks](/guides/framework-islands) clean up only when the component is destroyed.
+
+Related: [accessibility](/guides/accessibility), [transitions](/guides/transitions#when-it-switches-instantly).

@@ -1,0 +1,148 @@
+---
+title: Framework islands
+description: A useTheme hook for React, Vue, Svelte and Solid built on getTheme and onThemeChange.
+---
+
+The client API is plain TypeScript, so it works inside any island. What an island usually needs is the current theme as reactive state, to render a different icon or label. `onThemeChange` and `getTheme` are enough to build that.
+
+These hooks are examples to copy into your project, not packages. Each one:
+
+- reads the theme on the client only;
+- unsubscribes when the component goes away;
+- returns the applied theme (`light`, `dark`, never `system`) and the visitor's preference (which may be `system`).
+
+To change the theme, call `toggleTheme` or `setTheme` from the event handler in the island as usual.
+
+## React
+
+```tsx src/hooks/useTheme.ts
+import { useSyncExternalStore } from 'react'
+import { getPreference, getTheme, onThemeChange } from 'astro-eclipse/client'
+
+const subscribe = (notify: () => void) => onThemeChange(() => notify())
+
+export function useTheme() {
+  const theme = useSyncExternalStore(subscribe, getTheme, getTheme)
+  const preference = useSyncExternalStore(subscribe, getPreference, getPreference)
+  return { theme, preference }
+}
+```
+
+```tsx src/components/ThemeButton.tsx
+import { toggleTheme } from 'astro-eclipse/client'
+import { useTheme } from '../hooks/useTheme'
+
+export function ThemeButton() {
+  const { theme } = useTheme()
+  return (
+    <button type="button" onClick={(event) => toggleTheme({ origin: event.nativeEvent })}>
+      {theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+    </button>
+  )
+}
+```
+
+`event.nativeEvent` is the DOM `MouseEvent` that `origin` expects.
+
+On the server `getTheme()` answers from the config default, which is `light` when the default is `system`. During hydration React renders that value first and then updates it, so a server-rendered label may flash. Render the island with `client:only="react"` if that matters.
+
+## Vue
+
+```ts src/composables/useTheme.ts
+import { onMounted, onUnmounted, readonly, ref } from 'vue'
+import { getPreference, getTheme, onThemeChange } from 'astro-eclipse/client'
+
+export function useTheme() {
+  const theme = ref<string>()
+  const preference = ref<string>()
+  let stop: (() => void) | undefined
+
+  const sync = () => {
+    theme.value = getTheme()
+    preference.value = getPreference()
+  }
+
+  onMounted(() => {
+    sync()
+    stop = onThemeChange(sync)
+  })
+  onUnmounted(() => stop?.())
+
+  return { theme: readonly(theme), preference: readonly(preference) }
+}
+```
+
+Both values are `undefined` until the component mounts, so the server render and the first client render agree.
+
+## Svelte
+
+Svelte 5, in a `.svelte.ts` file so runes work:
+
+```ts src/lib/theme.svelte.ts
+import { onMount } from 'svelte'
+import { getPreference, getTheme, onThemeChange } from 'astro-eclipse/client'
+
+export function useTheme() {
+  let theme = $state<string>()
+  let preference = $state<string>()
+
+  onMount(() => {
+    const sync = () => {
+      theme = getTheme()
+      preference = getPreference()
+    }
+    sync()
+    return onThemeChange(sync)
+  })
+
+  return {
+    get theme() {
+      return theme
+    },
+    get preference() {
+      return preference
+    },
+  }
+}
+```
+
+The function returned from `onMount` runs when the component is destroyed, which unsubscribes.
+
+## Solid
+
+```ts src/hooks/useTheme.ts
+import { createSignal, onCleanup, onMount } from 'solid-js'
+import { getPreference, getTheme, onThemeChange } from 'astro-eclipse/client'
+
+export function useTheme() {
+  const [theme, setCurrentTheme] = createSignal<string>()
+  const [preference, setCurrentPreference] = createSignal<string>()
+
+  onMount(() => {
+    const sync = () => {
+      setCurrentTheme(getTheme())
+      setCurrentPreference(getPreference())
+    }
+    sync()
+    onCleanup(onThemeChange(sync))
+  })
+
+  return { theme, preference }
+}
+```
+
+Read the values by calling them: `theme()`.
+
+## Without a hook
+
+`onThemeChange` is a thin wrapper over a DOM event. Anything that can listen to `document` can use it directly:
+
+```ts
+document.addEventListener('eclipse:change', (event) => {
+  const { theme, preference } = (event as CustomEvent<{ theme: string; preference: string }>).detail
+})
+```
+
+The event is fired by the [head script](/reference/head-script) as well, so it also covers changes from the system setting and from other tabs.
+
+Related: [client API](/reference/client-api), [ClientRouter](/guides/clientrouter).

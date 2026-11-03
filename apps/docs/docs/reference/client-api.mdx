@@ -1,0 +1,98 @@
+---
+title: Client API
+description: setTheme, toggleTheme, getTheme, getPreference, onThemeChange and defineTransition, with signatures and error cases.
+---
+
+```ts
+import { setTheme, toggleTheme, getTheme, getPreference, onThemeChange, defineTransition } from 'astro-eclipse/client'
+```
+
+The module reads your resolved config through a virtual module that the integration provides, so it works only in an Astro project that has `eclipse()` in `integrations`.
+
+Every function is safe to import and call during server rendering. On the server `setTheme` and `toggleTheme` do nothing, `onThemeChange` returns a no-op unsubscribe, and `getPreference` and `getTheme` answer from the config default (`getTheme()` returns `light` when the default is `system`, since there is no `matchMedia`). Call them from client scripts and event handlers.
+
+The types `ThemeChange`, `SetThemeOptions`, `Origin`, `Point`, `TransitionContext` and `TransitionDefinition` are exported from the same entry.
+
+## setTheme
+
+```ts
+function setTheme(preference: string, options?: SetThemeOptions): void
+
+interface SetThemeOptions {
+  transition?: string // default: config.transition
+  duration?: number // default: config.duration
+  easing?: string // default: 'ease-in-out'
+  origin?: MouseEvent | Element | { x: number; y: number } | 'center' // default: 'center'
+}
+```
+
+Stores the choice, applies the theme and fires `eclipse:change`. The argument is a name from `themes`, or `'system'` when the themes include `light` and `dark`.
+
+Behavior:
+
+- The choice is saved to `localStorage` under `storageKey`. If storage throws (private windows, blocked storage), it is kept in memory and lasts until reload.
+- If the resulting theme equals the current one, for example `system` to `light` while the system is light, the change is applied at once without an animation.
+- Otherwise it runs the transition, or switches instantly in the cases listed in [transitions](/guides/transitions#when-it-switches-instantly). The attribute or classes change inside the View Transition's update step, and `eclipse:change` is dispatched right after.
+- A second call during a running transition skips the first, and the final state matches the latest call.
+
+Errors:
+
+- Throws `RangeError` with the message `astro-eclipse: unknown theme "<name>". Known: <themes>, system.` for a name that is not a preference. This includes `'system'` when the themes lack `light` or `dark`.
+- Does not throw for an unknown `transition` name: the change is instant.
+
+## toggleTheme
+
+```ts
+function toggleTheme(options?: SetThemeOptions): void
+```
+
+Moves to the next theme in `themes`, wrapping at the end, starting from the applied theme (`getTheme()`). When the preference is `system`, it starts from whichever theme the system currently gives, and the result is an explicit choice. It takes the same options and throws the same errors as `setTheme`, though with valid config it does not throw.
+
+## getTheme
+
+```ts
+function getTheme(): string
+```
+
+The theme applied now. Never `'system'`: a `system` preference resolves to `dark` or `light` from `prefers-color-scheme`.
+
+## getPreference
+
+```ts
+function getPreference(): string
+```
+
+What the visitor chose: a theme name, or `'system'`. Reads `localStorage`, falls back to the in-memory value when storage throws, and returns the config `default` when nothing valid is stored.
+
+## onThemeChange
+
+```ts
+function onThemeChange(listener: (change: ThemeChange) => void): () => void
+
+interface ThemeChange {
+  theme: string // applied theme, never 'system'
+  preference: string // what the visitor chose, may be 'system'
+}
+```
+
+Calls `listener` whenever the theme changes, and returns a function that removes the listener. It does not call the listener for the current value. Read it with `getTheme()` and `getPreference()` first.
+
+It fires for `setTheme` and `toggleTheme`, for system changes while the preference is `system`, and for changes made in another tab. It is a wrapper over the `eclipse:change` event on `document`.
+
+```ts
+const stop = onThemeChange(({ theme, preference }) => {
+  console.log(theme, preference)
+})
+
+stop()
+```
+
+## defineTransition
+
+```ts
+function defineTransition(name: string, definition: TransitionDefinition): TransitionDefinition
+```
+
+Registers an effect and returns the definition. An existing name, built-in or not, is replaced. See [custom transitions](/guides/custom-transition) for the shape and a worked example.
+
+Related: [config](/reference/config), [head script](/reference/head-script), [framework islands](/guides/framework-islands).

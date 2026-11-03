@@ -1,0 +1,75 @@
+---
+title: Introduction
+description: Animated theme switching for Astro, built on View Transitions.
+---
+
+astro-eclipse is an Astro integration that switches themes with an animated View Transition: a circle that grows from the button you clicked, a fade, or an effect you define yourself. The theme is applied before first paint, so there is no flash, and it survives navigation with Astro's `ClientRouter`.
+
+The current version is {{version}}. See the [changelog](/changelog) for what each release changed. The [demo](https://astro-eclipse.vercel.app) shows the effects live.
+
+The library sets one attribute (or class) on `<html>` and nothing else. Your CSS decides what each theme looks like, so it works with plain custom properties, Tailwind or anything else that can select on an attribute.
+
+## Quick start
+
+```bash
+npm install astro-eclipse
+```
+
+```js astro.config.mjs
+import { defineConfig } from 'astro/config'
+import eclipse from 'astro-eclipse'
+
+export default defineConfig({
+  integrations: [eclipse()],
+})
+```
+
+```css src/styles/global.css
+:root {
+  color-scheme: light;
+  --bg: #fff;
+  --fg: #111;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #000;
+  --fg: #eee;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+```
+
+```astro src/components/ThemeButton.astro
+<button type="button" id="theme-button" aria-label="Toggle dark mode">
+  Theme
+</button>
+
+<script>
+  import { toggleTheme } from 'astro-eclipse/client'
+
+  document.querySelector('#theme-button')?.addEventListener('click', (event) => {
+    toggleTheme({ origin: event })
+  })
+</script>
+```
+
+The circle opens from the click. Without View Transitions support, or with reduced motion on, the theme switches instantly.
+
+<CardGroup cols={2}>
+  <Card title="Getting started" href="/getting-started" icon="rocket">
+    Install, configure and wire up the first toggle.
+  </Card>
+  <Card title="Transitions" href="/guides/transitions" icon="play">
+    Every built-in effect, with origin, duration and easing.
+  </Card>
+  <Card title="Tailwind" href="/guides/tailwind" icon="code">
+    Class-based dark mode, including the Tailwind 4 variant.
+  </Card>
+  <Card title="Reference" href="/reference/config" icon="book-open">
+    Every config option and client function.
+  </Card>
+</CardGroup>

@@ -1,0 +1,35 @@
+/* Maps the shared design tokens (design/DESIGN.md) onto Blume's tokens. */
+/* The path is relative to .blume/src/generated, where Blume inlines this file. */
+@import '../../../../../design/tokens.css';
+
+:root,
+:root[data-theme='dark'] {
+  --blume-background: var(--canvas);
+  --blume-foreground: var(--text);
+  --blume-muted: var(--surface-raised);
+  --blume-muted-foreground: var(--text-muted);
+  --blume-border: var(--border);
+  --blume-accent-foreground: var(--accent-ink);
+  --blume-code-background: var(--surface-raised);
+  --blume-radius: var(--radius);
+  --blume-font-mono: var(--font-mono);
+}
+
+/* No shadows on any surface. */
+*,
+*::before,
+*::after {
+  box-shadow: none !important;
+}
+
+/* A filled accent is the pale yellow with black text, in both modes. */
+.bg-accent,
+[class*='bg-action'] {
+  background-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-edge);
+  outline-offset: 2px;
+}

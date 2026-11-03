@@ -1,0 +1,90 @@
+---
+title: Custom transitions
+description: Register your own effect with defineTransition, with a worked example.
+---
+
+An effect is a name plus keyframes for the old snapshot, the new snapshot, or both. `defineTransition` registers it, and from then on the name works in the config and in `setTheme`.
+
+```ts
+function defineTransition(name: string, definition: TransitionDefinition): TransitionDefinition
+
+interface TransitionDefinition {
+  old?: (context: TransitionContext) => Keyframe[]
+  new?: (context: TransitionContext) => Keyframe[]
+  top?: 'old' | 'new' // which snapshot is drawn above the other, default 'new'
+}
+
+interface TransitionContext {
+  origin: { x: number; y: number } // viewport pixels
+  width: number // viewport width
+  height: number // viewport height
+}
+```
+
+`old` animates `::view-transition-old(root)` and `new` animates `::view-transition-new(root)`. Return normal `Keyframe[]`, the same array you would give `element.animate()`. The duration and easing are applied by astro-eclipse, so leave them out of the keyframes.
+
+## Example: a square that grows from the origin
+
+The new theme appears in a rectangle that starts as a point at the origin and grows to the full viewport. `clip-path: inset(top right bottom left)` does that: each value cuts that many pixels from one edge.
+
+```ts src/scripts/eclipse-effects.ts
+import { defineTransition } from 'astro-eclipse/client'
+
+defineTransition('square', {
+  new: ({ origin, width, height }) => [
+    {
+      clipPath: `inset(${origin.y}px ${width - origin.x}px ${height - origin.y}px ${origin.x}px)`,
+    },
+    { clipPath: 'inset(0px 0px 0px 0px)' },
+  ],
+})
+```
+
+Load it once on every page, for example from the layout, then use the name:
+
+```astro src/layouts/Layout.astro
+<script>
+  import '../scripts/eclipse-effects'
+</script>
+```
+
+```ts
+setTheme('dark', { transition: 'square', origin: event })
+```
+
+To make it the default, set `transition: 'square'` in the config. The config does not check the name, so a typo falls back to an instant switch rather than failing the build.
+
+## Example: reveal from the top
+
+An effect does not have to use the origin:
+
+```ts
+defineTransition('curtain', {
+  new: () => [{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }],
+})
+```
+
+## Which snapshot goes on top
+
+By default the new snapshot is drawn above the old one, so an effect on `new` reveals it. To reveal the new theme by removing the old one, put the old snapshot on top and animate it away. `circle-inverse` works this way:
+
+```ts
+defineTransition('shrink', {
+  top: 'old',
+  old: ({ origin, width, height }) => [
+    { clipPath: `circle(${Math.hypot(width, height)}px at ${origin.x}px ${origin.y}px)` },
+    { clipPath: `circle(0px at ${origin.x}px ${origin.y}px)` },
+  ],
+})
+```
+
+`Math.hypot(width, height)` is a radius that covers the viewport from any point inside it.
+
+## Rules
+
+- Register it in code that runs in the browser before the first `setTheme`. Importing it on the server is harmless: it only fills a registry.
+- Registering an existing name replaces it, built-in names included.
+- Keyframes run only when the transition runs. In the [cases where the theme switches instantly](/guides/transitions#when-it-switches-instantly) your function is not called.
+- Keep keyframes to properties the browser can animate on the root snapshot, such as `clip-path`, `opacity` and `transform`. Other properties have not been checked.
+
+Related: [client API](/reference/client-api#definetransition), [transitions](/guides/transitions).

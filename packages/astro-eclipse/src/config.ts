@@ -4,7 +4,7 @@ export interface EclipseOptions {
   /** Theme to use before the visitor picks one, or `'system'` to follow `prefers-color-scheme`. Default `'system'`. */
   default?: string
   /** `'class'` toggles a class on `<html>`; `'data-*'` sets that attribute. Default `'data-theme'`. */
-  attribute?: string
+  attribute?: 'class' | `data-${string}`
   /** localStorage key that holds the visitor's choice. Default `'eclipse-theme'`. */
   storageKey?: string
   /** Effect used when a call does not name one. Default `'circle'`. */
@@ -16,7 +16,7 @@ export interface EclipseOptions {
 export interface EclipseConfig {
   themes: string[]
   default: string
-  attribute: string
+  attribute: 'class' | `data-${string}`
   storageKey: string
   transition: string
   duration: number
