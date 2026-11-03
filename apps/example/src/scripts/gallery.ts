@@ -53,7 +53,7 @@ function init(): void {
     durationOut.textContent = `${duration.value} ms`
     const value = reduced.checked ? 0 : Number(duration.value)
     source.innerHTML = highlight(
-      `setTheme('${nextTheme()}', {\n  transition: '${select.value}',\n  duration: ${value},\n  origin: ${originLiteral()},\n})`,
+      `setTheme('${nextTheme()}', {\n  transition: '${select.value}',\n  duration: ${value},\n  origin: ${originLiteral()},\n  direction: '${checked('direction')}',\n})`,
     )
     cycle.textContent = themeList().join(' > ')
     const option = select.selectedOptions[0]
@@ -68,6 +68,7 @@ function init(): void {
       transition: select.value,
       duration: reduced.checked ? 0 : Number(duration.value),
       origin: origin === 'center' ? 'center' : origin === 'corner' ? { x: 0, y: 0 } : event,
+      direction: checked('direction') as SetThemeOptions['direction'],
     }
     setTheme(nextTheme(), options)
   }

@@ -1,11 +1,12 @@
 import { resolveOrigin, type Origin } from './origin.js'
-import { getTransition } from './transitions.js'
+import { getTransition, type Direction } from './transitions.js'
 
 export interface TransitionRequest {
   name: string
   duration: number
   easing: string
   origin: Origin | undefined
+  direction: Direction
 }
 
 /** Astro's ClientRouter sets this on <html> while it navigates, and removes it when the page has swapped. */
@@ -61,6 +62,7 @@ export function runTransition(update: () => void, request: TransitionRequest): v
     () => {
       const context = {
         origin: resolveOrigin(request.origin, { width: innerWidth, height: innerHeight }),
+        direction: request.direction,
         width: innerWidth,
         height: innerHeight,
       }

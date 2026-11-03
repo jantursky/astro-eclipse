@@ -1,10 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { runTransition, type TransitionRequest } from '../src/client/runner.js'
-import { defineTransition, getTransition } from '../src/client/transitions.js'
+import { defineTransition, getTransition, type Direction } from '../src/client/transitions.js'
 import { mockMedia, resetDom } from './helpers.js'
 
-const request: TransitionRequest = { name: 'circle', duration: 400, easing: 'ease', origin: { x: 10, y: 20 } }
+const request: TransitionRequest = {
+  name: 'circle',
+  duration: 400,
+  easing: 'ease',
+  origin: { x: 10, y: 20 },
+  direction: 'right',
+}
 
 /** A controllable stand-in for a ViewTransition. */
 function fakeTransition(update: () => void, skipped = false) {
@@ -144,7 +150,7 @@ describe('defineTransition', () => {
 })
 
 describe('built-in effects', () => {
-  const context = { origin: { x: 0, y: 0 }, width: 300, height: 400 }
+  const context = { origin: { x: 0, y: 0 }, direction: 'right' as Direction, width: 300, height: 400 }
 
   it('circle grows the new snapshot from the origin', () => {
     const keyframes = getTransition('circle')!.new!(context)
@@ -161,5 +167,49 @@ describe('built-in effects', () => {
     const fade = getTransition('fade')!
     expect(fade.old!(context)[1]).toEqual({ opacity: 0 })
     expect(fade.new!(context)[0]).toEqual({ opacity: 0 })
+  })
+})
+
+describe('shape and sweep effects', () => {
+  const context = { origin: { x: 100, y: 50 }, direction: 'right' as Direction, width: 300, height: 200 }
+  const clip = (name: string, ctx = context) => getTransition(name)!.new!(ctx).map((frame) => frame.clipPath)
+
+  it.each([
+    ['right', ['inset(0 100% 0 0)', 'inset(0 0 0 0)']],
+    ['left', ['inset(0 0 0 100%)', 'inset(0 0 0 0)']],
+    ['down', ['inset(0 0 100% 0)', 'inset(0 0 0 0)']],
+    ['up', ['inset(100% 0 0 0)', 'inset(0 0 0 0)']],
+  ] as const)('wipe travelling %s', (direction, expected) => {
+    expect(clip('wipe', { ...context, direction })).toEqual(expected)
+  })
+
+  it('diamond starts as a point and reaches the farthest corner', () => {
+    expect(clip('diamond')).toEqual([
+      'polygon(100px 50px, 100px 50px, 100px 50px, 100px 50px)',
+      'polygon(100px -300px, 450px 50px, 100px 400px, -250px 50px)',
+    ])
+  })
+
+  it('iris grows a hexagon that covers the viewport', () => {
+    const [from, to] = clip('iris') as [string, string]
+    expect(from).toMatch(/^polygon\((100px 50px(, )?){6}\)$/)
+    const radius = Math.hypot(200, 150) / Math.cos(Math.PI / 6)
+    expect(to.startsWith(`polygon(${100 + radius}px 50px`)).toBe(true)
+  })
+
+  it('blinds draw the same number of slats before and after, so the path can animate', () => {
+    const [from, to] = clip('blinds', { ...context, direction: 'down' }) as [string, string]
+    expect(from.match(/M/g)).toHaveLength(8)
+    expect(to.match(/M/g)).toHaveLength(8)
+    expect(to.startsWith("path('M0 0h300v25h-300z")).toBe(true)
+    expect(from.startsWith("path('M0 0h300v0h-300z")).toBe(true)
+  })
+
+  it.each([
+    ['up', "path('M0 25h300v0h-300z"],
+    ['left', "path('M37.5 0h0v200h0z"],
+    ['right', "path('M0 0h0v200h0z"],
+  ] as const)('blinds travelling %s start from the right edge of each slat', (direction, start) => {
+    expect((clip('blinds', { ...context, direction }) as [string, string])[0].startsWith(start)).toBe(true)
   })
 })

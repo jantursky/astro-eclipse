@@ -1,5 +1,6 @@
 import { SYSTEM, supportsSystem, type EclipseConfig } from '../config.js'
 import type { Origin } from './origin.js'
+import type { Direction } from './transitions.js'
 import { noop, runTransition } from './runner.js'
 
 export interface ThemeChange {
@@ -16,6 +17,8 @@ export interface SetThemeOptions {
   easing?: string
   /** Where a reveal starts. Pass the click event. Default: the middle of the screen. */
   origin?: Origin
+  /** Which way `wipe` and `blinds` travel. Default `'right'`. */
+  direction?: Direction
 }
 
 export interface Eclipse {
@@ -104,6 +107,7 @@ export function createEclipse(config: EclipseConfig): Eclipse {
       duration: options.duration ?? config.duration,
       easing: options.easing ?? 'ease-in-out',
       origin: options.origin,
+      direction: options.direction ?? 'right',
     })
   }
 

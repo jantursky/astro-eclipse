@@ -11,6 +11,6 @@
     "import": "*",
     "ignore": ["virtual:astro-eclipse/config"],
     "gzip": true,
-    "limit": "2 kB"
+    "limit": "2.5 kB"
   }
 ]

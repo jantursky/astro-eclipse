@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro'
-import { origins, themeCounts, transitions } from '../data/transitions'
+import { directions, origins, themeCounts, transitions } from '../data/transitions'
 ---
 
 <Base title="Gallery: astro-eclipse" description="Every astro-eclipse transition, live, with the exact setTheme call.">
@@ -46,6 +46,18 @@ import { origins, themeCounts, transitions } from '../data/transitions'
               <label class="option">
                 <input type="radio" name="origin" value={origin.id} checked={index === 0} />
                 <span>{origin.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="field">
+          <legend>Direction (wipe, blinds)</legend>
+          <div class="options">
+            {directions.map((direction, index) => (
+              <label class="option">
+                <input type="radio" name="direction" value={direction.id} checked={index === 0} />
+                <span>{direction.label}</span>
               </label>
             ))}
           </div>

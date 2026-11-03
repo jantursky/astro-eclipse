@@ -27,12 +27,43 @@ export const transitions: TransitionEntry[] = [
     description: 'A plain cross fade between the two themes. Ignores the origin.',
     verified: false,
   },
+  {
+    id: 'wipe',
+    label: 'Wipe',
+    description: 'A straight edge sweeps across the screen in the chosen direction. Ignores the origin.',
+    verified: false,
+  },
+  {
+    id: 'diamond',
+    label: 'Diamond',
+    description: 'The new theme grows from the origin as a diamond.',
+    verified: false,
+  },
+  {
+    id: 'iris',
+    label: 'Iris',
+    description: 'The new theme opens from the origin as a hexagon, like a camera iris.',
+    verified: false,
+  },
+  {
+    id: 'blinds',
+    label: 'Blinds',
+    description: 'Eight slats open one beside the other. The direction sets which way they grow. Ignores the origin.',
+    verified: false,
+  },
 ]
 
 export const origins = [
   { id: 'click', label: 'Click point' },
   { id: 'center', label: 'Center' },
   { id: 'corner', label: 'Corner' },
+] as const
+
+export const directions = [
+  { id: 'right', label: 'Right' },
+  { id: 'left', label: 'Left' },
+  { id: 'down', label: 'Down' },
+  { id: 'up', label: 'Up' },
 ] as const
 
 export type OriginId = (typeof origins)[number]['id']
