@@ -17,8 +17,9 @@ export default defineConfig({
   },
   navigation: {
     actions: [
-      { href: 'https://astro-eclipse.vercel.app', label: 'Demo' },
+      { href: 'https://astro-eclipse-demo.vercel.app', label: 'Demo' },
       { href: 'https://www.npmjs.com/package/astro-eclipse', label: 'npm' },
+      { href: 'https://github.com/jantursky/astro-eclipse', label: 'GitHub' },
     ],
   },
   deployment: { site: 'https://astro-eclipse-docs.vercel.app' },

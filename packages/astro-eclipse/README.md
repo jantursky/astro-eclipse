@@ -10,7 +10,7 @@
 [![types](https://img.shields.io/npm/types/astro-eclipse)](https://www.npmjs.com/package/astro-eclipse)
 [![license](https://img.shields.io/npm/l/astro-eclipse)](https://github.com/jantursky/astro-eclipse/blob/main/LICENSE)
 
-[Docs](https://astro-eclipse-docs.vercel.app) · [Demo](https://astro-eclipse.vercel.app) · [npm](https://www.npmjs.com/package/astro-eclipse) · [Changelog](https://github.com/jantursky/astro-eclipse/blob/main/packages/astro-eclipse/CHANGELOG.md)
+[Docs](https://astro-eclipse-docs.vercel.app) · [Demo](https://astro-eclipse-demo.vercel.app) · [npm](https://www.npmjs.com/package/astro-eclipse) · [Changelog](https://github.com/jantursky/astro-eclipse/blob/main/packages/astro-eclipse/CHANGELOG.md)
 
 An Astro integration that switches themes with an animated transition instead of an instant color flip. It works with any number of named themes, stores the choice and follows `prefers-color-scheme`. The theme is set before first paint, on load and on `ClientRouter` navigation, so the page does not flash the wrong one (checked in Chromium and WebKit).
 
