@@ -8,7 +8,7 @@
 
 [Docs](https://astro-eclipse-docs.vercel.app) · [Demo](https://astro-eclipse.vercel.app) · [npm](https://www.npmjs.com/package/astro-eclipse) · [Changelog](packages/astro-eclipse/CHANGELOG.md)
 
-An Astro integration that switches themes with an animated transition instead of an instant color flip. It works with any number of named themes, stores the choice, follows `prefers-color-scheme`, and never shows the wrong theme on load or during `ClientRouter` navigation.
+An Astro integration that switches themes with an animated transition instead of an instant color flip. It works with any number of named themes, stores the choice and follows `prefers-color-scheme`. The theme is set before first paint, on load and on `ClientRouter` navigation, so the page does not flash the wrong one (checked in Chromium and WebKit).
 
 | circle                                             | circle-inverse                                                   | wipe                                             |
 | -------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------ |
