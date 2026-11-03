@@ -27,6 +27,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "sync:readme": "node scripts/readme.js",
+    "gifs": "node scripts/gifs.js",
     "check": "bun run format:check && bun run lint && bun run typecheck && bun run test:coverage"
   },
   "devDependencies": {
