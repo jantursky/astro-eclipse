@@ -6,6 +6,7 @@ export default defineMeta({
   pages: [
     'css-variables',
     'tailwind',
+    'theme-toggle',
     'transitions',
     'custom-transition',
     'framework-islands',

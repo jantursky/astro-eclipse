@@ -6,15 +6,15 @@ description: Which browsers run the animation, what happens without it, and what
 The animation needs `document.startViewTransition`. Without it the theme still changes, instantly. The theme logic itself (attribute, storage, `system`) uses `localStorage`, `matchMedia` and custom events, which every current browser has.
 
 :::warning
-The versions in the table come from [MDN browser compatibility data](https://developer.mozilla.org/en-US/docs/Web/API/Document/startViewTransition#browser_compatibility). They are not the result of our tests. Every browser in the "Checked on" column is unverified until a real run says otherwise.
+The versions in the table come from [MDN browser compatibility data](https://developer.mozilla.org/en-US/docs/Web/API/Document/startViewTransition#browser_compatibility). They are not the result of our tests. A browser is only marked as checked where the column says what was run.
 :::
 
-| Browser | startViewTransition | Behavior without it | Checked on |
-| ------- | ------------------- | ------------------- | ---------- |
-| Chrome  | 111 (MDN)           | Instant switch      | unverified |
-| Edge    | 111 (MDN)           | Instant switch      | unverified |
-| Safari  | 18 (MDN)            | Instant switch      | unverified |
-| Firefox | 144 (MDN)           | Instant switch      | unverified |
+| Browser | startViewTransition | Behavior without it | Checked on                                                                                                                                                              |
+| ------- | ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chrome  | 111 (MDN)           | Instant switch      | Chromium 156 (Playwright), 2026-11-03: all 7 effects seen mid-transition in screenshots; 18 end-to-end checks pass                                                      |
+| Edge    | 111 (MDN)           | Instant switch      | unverified                                                                                                                                                              |
+| Safari  | 18 (MDN)            | Instant switch      | WebKit 27.2 (Playwright), 2026-11-03: 18 end-to-end checks pass and the animations start; the look of each effect is unverified (screenshots only show the final theme) |
+| Firefox | 144 (MDN)           | Instant switch      | unverified (the Playwright Firefox build would not start on the test machine)                                                                                           |
 
 "Instant switch" is what the code does when the function is missing: it applies the theme and fires `eclipse:change`, with no animation. That path has not been run in the listed browsers.
 

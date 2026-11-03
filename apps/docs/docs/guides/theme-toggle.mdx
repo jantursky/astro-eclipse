@@ -1,0 +1,45 @@
+---
+title: ThemeToggle
+description: A ready-made button that cycles themes, with an accessible name that says where it will go.
+---
+
+`ThemeToggle` is an Astro component with no palette and almost no styling. It renders a real `<button>`, cycles the themes you give it, and starts the reveal at the point where it was clicked.
+
+```astro
+---
+import { ThemeToggle } from 'astro-eclipse/components'
+---
+
+<ThemeToggle />
+<ThemeToggle themes={['light', 'dark']} transition="wipe" direction="down" />
+```
+
+## Props
+
+| Prop         | Type                                  | Default                   | Notes                                           |
+| ------------ | ------------------------------------- | ------------------------- | ----------------------------------------------- |
+| `themes`     | `string[]`                            | every theme in config     | The cycle, in order. Names must be in `themes`. |
+| `transition` | `string`                              | the config's `transition` | Any built-in or `defineTransition()` name.      |
+| `duration`   | `number`                              | the config's `duration`   | Milliseconds.                                   |
+| `direction`  | `'up' \| 'down' \| 'left' \| 'right'` | `'right'`                 | For `wipe` and `blinds`.                        |
+| `class`      | `string`                              | none                      | Added next to the `eclipse-toggle` class.       |
+
+The default slot replaces the icon. The built-in icon is a half-filled circle that uses `currentColor`.
+
+## Accessible name
+
+The button has no visible text, so its `aria-label` carries the meaning. Once the page loads it reads `Theme: dark. Switch to sepia`, and it is updated whenever the theme changes, including changes from other tabs, from `system` mode and from other buttons. Before the script runs it reads `Switch theme`.
+
+Nothing is announced when the theme changes. See [accessibility](/guides/accessibility) if your site wants a live region.
+
+## Styling
+
+The component ships low-specificity rules (`:where(.eclipse-toggle)`), so any selector of yours wins. In forced-colors mode it uses `ButtonText`, `ButtonFace` and `Highlight`, and gets a border so the button stays visible.
+
+## ClientRouter
+
+One click listener on `document` serves every toggle on the page, so buttons that arrive with a navigation work without rebinding. The labels are refreshed on `astro:page-load`.
+
+## Not checked
+
+The component is tested in Chromium and WebKit (keyboard, accessible name, navigation, axe in light and dark). Firefox and forced-colors mode are not checked.

@@ -1,0 +1,28 @@
+---
+import { ThemeToggle } from 'astro-eclipse/components'
+import Base from '../layouts/Base.astro'
+---
+
+<Base title="ThemeToggle: astro-eclipse">
+  <section class="wrap head">
+    <div class="stack">
+      <span class="label">Component</span>
+      <h1 class="title">ThemeToggle</h1>
+      <p class="lede">
+        A real button that cycles themes. Its accessible name says the current theme and the next one, and it works from
+        the keyboard.
+      </p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <div class="card stack">
+      <h2>Default: every theme, config effect</h2>
+      <ThemeToggle data-testid="default" />
+      <h2>Two themes, wipe</h2>
+      <ThemeToggle themes={['light', 'dark']} transition="wipe" direction="down" />
+      <p class="caption">
+        <a href="/navigation/a">Go to a navigation page</a>: the buttons keep working there.
+      </p>
+    </div>
+  </section>
+</Base>

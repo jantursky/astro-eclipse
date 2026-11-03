@@ -10,3 +10,9 @@ declare module 'virtual:astro-eclipse/config' {
   }
   export default config
 }
+
+// Only so this package can compile `export ... from './ThemeToggle.astro'`. Consumers get the real type from `astro/client`.
+declare module '*.astro' {
+  const component: unknown
+  export default component
+}

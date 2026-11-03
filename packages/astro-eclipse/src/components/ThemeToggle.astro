@@ -1,0 +1,106 @@
+---
+import config from 'virtual:astro-eclipse/config'
+
+export interface Props {
+  /** Themes to cycle through, in order. Default: every theme in the config. */
+  themes?: string[]
+  /** Effect for this button. Default: the config's `transition`. */
+  transition?: string
+  duration?: number
+  /** Which way `wipe` and `blinds` travel. */
+  direction?: 'up' | 'down' | 'left' | 'right'
+  class?: string
+}
+
+const { themes = config.themes, transition, duration, direction, class: className } = Astro.props
+---
+
+<button
+  type="button"
+  class:list={['eclipse-toggle', className]}
+  data-eclipse-toggle
+  data-themes={themes.join(' ')}
+  data-transition={transition}
+  data-duration={duration}
+  data-direction={direction}
+  aria-label="Switch theme"
+>
+  <slot>
+    <svg viewBox="0 0 24 24" width="1.25em" height="1.25em" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"></circle>
+      <path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"></path>
+    </svg>
+  </slot>
+</button>
+
+<script>
+  import { getTheme, onThemeChange, setTheme, type SetThemeOptions } from 'astro-eclipse/client'
+
+  const SELECTOR = '[data-eclipse-toggle]'
+  const cycleOf = (button: HTMLElement): string[] => (button.dataset.themes ?? '').split(' ').filter(Boolean)
+
+  function nextTheme(button: HTMLElement): string | undefined {
+    const cycle = cycleOf(button)
+    return cycle[(cycle.indexOf(getTheme()) + 1) % cycle.length]
+  }
+
+  /** The name states where the page is and where the button goes, e.g. "Theme: dark. Switch to sepia". */
+  function label(): void {
+    for (const button of document.querySelectorAll<HTMLElement>(SELECTOR)) {
+      button.setAttribute('aria-label', `Theme: ${getTheme()}. Switch to ${nextTheme(button) ?? getTheme()}`)
+    }
+  }
+
+  function options(button: HTMLElement, event: MouseEvent): SetThemeOptions {
+    const { transition, duration, direction } = button.dataset
+    return {
+      origin: event,
+      ...(transition && { transition }),
+      ...(duration && { duration: Number(duration) }),
+      ...(direction && { direction: direction as SetThemeOptions['direction'] }),
+    }
+  }
+
+  // One listener for every toggle on the page, so buttons swapped in by ClientRouter work without rebinding.
+  const flag = '__eclipseToggle'
+  if (!(flag in window)) {
+    Object.defineProperty(window, flag, { value: true })
+    document.addEventListener('click', (event) => {
+      const button = event.target instanceof Element ? event.target.closest<HTMLElement>(SELECTOR) : null
+      const next = button && nextTheme(button)
+      if (button && next) setTheme(next, options(button, event))
+    })
+    onThemeChange(label)
+    document.addEventListener('astro:page-load', label)
+  }
+  label()
+</script>
+
+<style is:global>
+  :where(.eclipse-toggle) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5em;
+    border: 0;
+    border-radius: 0.5em;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  :where(.eclipse-toggle):focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  @media (forced-colors: active) {
+    :where(.eclipse-toggle) {
+      border: 1px solid ButtonText;
+      color: ButtonText;
+      background: ButtonFace;
+    }
+    :where(.eclipse-toggle):focus-visible {
+      outline-color: Highlight;
+    }
+  }
+</style>

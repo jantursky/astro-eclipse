@@ -12,8 +12,18 @@ A theme change runs inside `document.startViewTransition`. The browser snapshots
 | `circle` (default) | The new theme grows as a circle from the origin until it covers the screen.     |
 | `circle-inverse`   | The old theme shrinks to the origin as a circle and uncovers the new one below. |
 | `fade`             | The old theme fades out while the new one fades in. The origin is ignored.      |
+| `wipe`             | A straight edge sweeps across the screen in the chosen `direction`. No origin.  |
+| `diamond`          | The new theme grows as a diamond from the origin.                               |
+| `iris`             | The new theme opens as a hexagon from the origin, like a camera iris.           |
+| `blinds`           | Eight slats open side by side, growing in the chosen `direction`. No origin.    |
 
-More effects are added over time. To make your own, see [custom transitions](/guides/custom-transition).
+`direction` is `'right'` (the default), `'left'`, `'down'` or `'up'`. It sets where `wipe` travels, and which way the `blinds` slats grow: `'left'` and `'right'` give vertical slats, `'up'` and `'down'` give horizontal ones.
+
+```ts
+setTheme('dark', { transition: 'wipe', direction: 'down' })
+```
+
+To make your own effect, see [custom transitions](/guides/custom-transition).
 
 ## Choose an effect
 

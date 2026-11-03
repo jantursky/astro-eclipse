@@ -16,7 +16,7 @@ const write = (path, content) => {
 try {
   const [packed] = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', dir], packageDir))
   const files = packed.files.map((file) => file.path).sort()
-  const allowed = /^(dist\/.+\.(js|js\.map|d\.ts)|README\.md|CHANGELOG\.md|LICENSE|package\.json)$/
+  const allowed = /^(dist\/.+\.(js|js\.map|d\.ts|astro)|README\.md|CHANGELOG\.md|LICENSE|package\.json)$/
   const unexpected = files.filter((file) => !allowed.test(file))
   if (unexpected.length > 0) throw new Error(`Unexpected files in the tarball: ${unexpected.join(', ')}`)
   console.log(`tarball: ${packed.filename}, ${files.length} files, ${(packed.size / 1024).toFixed(1)} kB`)
@@ -46,11 +46,13 @@ export default defineConfig({ integrations: [eclipse({ themes: ['light', 'dark',
   write(
     'src/pages/index.astro',
     `---
+import { ThemeToggle } from 'astro-eclipse/components'
 ---
 <html lang="en">
   <head><meta charset="utf-8" /><title>pack test</title></head>
   <body>
     <button id="toggle">toggle</button>
+    <ThemeToggle themes={['light', 'dark']} transition="wipe" />
     <script>
       import { toggleTheme, getTheme } from 'astro-eclipse/client'
       document.getElementById('toggle')?.addEventListener('click', (event) => toggleTheme({ origin: event }))
@@ -63,6 +65,7 @@ export default defineConfig({ integrations: [eclipse({ themes: ['light', 'dark',
   run('npx', ['astro', 'build'], dir)
 
   const html = readFileSync(join(dir, 'dist/index.html'), 'utf8')
+  if (!html.includes('data-eclipse-toggle')) throw new Error('ThemeToggle was not rendered')
   if (!html.includes('eclipse-theme')) throw new Error('The inline head script is missing from the built page')
   // Astro inlines small scripts into the page, so look in the HTML and in the emitted assets.
   const assetDir = join(dir, 'dist/_astro')

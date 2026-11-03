@@ -28,6 +28,10 @@
       "types": "./dist/client/index.d.ts",
       "default": "./dist/client/index.js"
     },
+    "./components": {
+      "types": "./dist/components/index.d.ts",
+      "default": "./dist/components/index.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -54,12 +58,12 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && node scripts/measure-head-script.js && size-limit",
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-components.js && node scripts/measure-head-script.js && size-limit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "lint:package": "publint --strict && attw --pack . --profile esm-only",
+    "lint:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints components",
     "test:pack": "node scripts/pack-test.js",
     "size": "size-limit"
   },
