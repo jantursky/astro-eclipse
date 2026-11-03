@@ -1,0 +1,241 @@
+---
+import Base from '../layouts/Base.astro'
+import { origins, themeCounts, transitions } from '../data/transitions'
+---
+
+<Base title="Gallery: astro-eclipse" description="Every astro-eclipse transition, live, with the exact setTheme call.">
+  <section class="wrap head">
+    <div class="stack">
+      <span class="label">Gallery</span>
+      <h1 class="title">Every effect, live.</h1>
+      <p class="lede">
+        Change the settings and press play. The page itself is the preview, and the call next to it is exactly what
+        runs.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap section" data-gallery aria-label="Playground">
+    <div class="layout">
+      <div class="card controls">
+        <div class="field">
+          <label for="effect">Effect</label>
+          <select id="effect">
+            {transitions.map((entry) => (
+              <option value={entry.id} data-verified={String(entry.verified)}>
+                {entry.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="duration">
+            Duration{' '}
+            <output id="duration-out" for="duration">
+              500 ms
+            </output>
+          </label>
+          <input id="duration" type="range" min="100" max="2000" step="50" value="500" />
+        </div>
+
+        <fieldset class="field">
+          <legend>Origin</legend>
+          <div class="options">
+            {origins.map((origin, index) => (
+              <label class="option">
+                <input type="radio" name="origin" value={origin.id} checked={index === 0} />
+                <span>{origin.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="field">
+          <legend>Themes in the cycle</legend>
+          <div class="options">
+            {themeCounts.map((count) => (
+              <label class="option">
+                <input type="radio" name="count" value={count} checked={count === 2} />
+                <span>{count}</span>
+              </label>
+            ))}
+          </div>
+          <p class="caption">
+            Cycle: <span data-cycle></span>
+          </p>
+        </fieldset>
+
+        <div class="field">
+          <label class="switch">
+            <input id="reduced" type="checkbox" role="switch" />
+            <span>Simulate reduced motion</span>
+          </label>
+          <p class="muted small">
+            The switch passes <code>duration: 0</code>, which makes the change instant. The real OS setting is honored
+            automatically with no code on your side. Your system reports reduced motion:&nbsp;
+            <strong data-os-motion>…</strong>.
+          </p>
+        </div>
+
+        <button type="button" class="btn btn-primary" data-play>
+          Play transition
+        </button>
+      </div>
+
+      <div class="side">
+        <div class="stack">
+          <h2>The call</h2>
+          <pre class="code"><code data-source>setTheme()</code></pre>
+          <p class="muted small" data-note hidden>
+            Unverified in real browsers. This effect has not been checked on Chrome, Safari or Firefox yet.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="all">
+    <div class="stack">
+      <h2 id="all">All effects</h2>
+      <ul class="list">
+        {transitions.map((entry) => (
+          <li class="card item">
+            <div>
+              <h3>
+                {entry.label} <code>{entry.id}</code>
+              </h3>
+              <p class="muted">{entry.description}</p>
+              {!entry.verified && <p class="caption">Unverified in real browsers.</p>}
+            </div>
+            <button type="button" class="btn btn-ghost" data-play={entry.id}>
+              Play {entry.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <script>
+    import '../scripts/gallery'
+  </script>
+</Base>
+
+<style>
+  .head {
+    padding-top: 64px;
+  }
+  .title {
+    font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .side {
+    min-width: 0;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+  .field > label,
+  legend {
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  select {
+    font: inherit;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+  input[type='range'] {
+    width: 100%;
+    accent-color: var(--accent-edge);
+    min-height: 24px;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .option,
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+  .switch {
+    align-self: flex-start;
+  }
+  .option:has(input:checked) {
+    border-color: var(--accent-edge);
+  }
+  input[type='radio'],
+  input[type='checkbox'] {
+    accent-color: var(--accent-edge);
+    margin: 0;
+    width: 16px;
+    height: 16px;
+  }
+  .small {
+    font-size: 1rem;
+  }
+  .list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    display: grid;
+    gap: var(--gap);
+  }
+  .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .item h3 {
+    margin-bottom: 4px;
+  }
+  .item code {
+    margin-left: 8px;
+    color: var(--text-muted);
+  }
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (forced-colors: active) {
+    .option,
+    .switch,
+    select {
+      border-color: CanvasText;
+    }
+  }
+</style>

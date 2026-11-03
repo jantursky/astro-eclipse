@@ -1,0 +1,279 @@
+@import '../../../../design/tokens.css';
+
+/* Example palettes. The library ships none; these are plain CSS variables per [data-theme]. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+:root[data-theme='sepia'] {
+  color-scheme: light;
+  --canvas: #f4ecd8;
+  --surface: #f4ecd8;
+  --surface-raised: #ebe1c6;
+  --text: #3b2f1e;
+  --text-muted: #5e4f37;
+  --text-caption: #6f5f45;
+  --border: #d3c4a0;
+  --accent-edge: #7a5a00;
+  --logo-gradient-from: #d83333;
+  --logo-gradient-to: #f041ff;
+}
+
+:root[data-theme='forest'] {
+  color-scheme: dark;
+  --canvas: #0b1410;
+  --surface: #0b1410;
+  --surface-raised: #11201a;
+  --text: #e6f0e8;
+  --text-muted: #9fb5a6;
+  --text-caption: #8aa192;
+  --border: #284236;
+  --accent-edge: #fddd05;
+  --logo-gradient-from: #f26a6a;
+  --logo-gradient-to: #f777ff;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+main {
+  flex: 1;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+pre {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 7vw + 0.5rem, 7.5rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+h2 {
+  font-size: clamp(1.75rem, 2.5vw + 1rem, 2rem);
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+a {
+  color: inherit;
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.wrap {
+  width: 100%;
+  max-width: calc(var(--page-width) + 48px);
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+.section {
+  padding-block: var(--section-gap) 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.lede {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  max-width: 40rem;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.caption {
+  font-size: 0.75rem;
+  color: var(--text-caption);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-edge);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-edge);
+  outline-offset: 2px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: var(--radius);
+  color: var(--text);
+}
+
+.btn-primary {
+  padding: 14px 20px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn-ghost {
+  padding: 8px 16px;
+  border: 1px solid var(--text);
+  background: transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+.btn-ghost[aria-pressed='true'] {
+  background: var(--surface-raised);
+  border-color: var(--accent-edge);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--card-padding);
+}
+
+.code {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  overflow-x: auto;
+  color: var(--text);
+  line-height: 1.6;
+  width: 100%;
+  max-width: 100%;
+}
+
+.code .tok-str,
+.code .tok-num {
+  color: var(--text);
+}
+
+.code .tok-key,
+.code .tok-kw {
+  color: var(--text-muted);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --section-gap: 56px;
+  }
+  .wrap {
+    padding-inline: 16px;
+  }
+}
+
+@media (forced-colors: active) {
+  .btn-primary,
+  .btn-ghost,
+  .card,
+  .code {
+    border: 1px solid CanvasText;
+  }
+  :focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.btn-ghost[aria-pressed='true']::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-edge);
+}

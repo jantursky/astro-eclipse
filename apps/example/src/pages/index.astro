@@ -1,0 +1,198 @@
+---
+import Base from '../layouts/Base.astro'
+
+const themes = ['light', 'dark', 'sepia', 'forest', 'system']
+const features = [
+  {
+    title: 'No flash',
+    text: 'A tiny inline script in the head sets the theme attribute before first paint, from storage or from the system setting.',
+  },
+  {
+    title: 'Survives navigation',
+    text: 'The theme is re-applied to the incoming document on every ClientRouter swap, so pages never blink back to the default.',
+  },
+  {
+    title: 'Respects the visitor',
+    text: 'Reduced motion, a missing View Transitions API and an unknown effect all fall back to an instant switch.',
+  },
+]
+const install = `npm install astro-eclipse`
+const config = `import eclipse from 'astro-eclipse'
+
+export default defineConfig({
+  integrations: [
+    eclipse({
+      themes: ['light', 'dark', 'sepia', 'forest'],
+      default: 'system',
+    }),
+  ],
+})`
+const usage = `import { toggleTheme } from 'astro-eclipse/client'
+
+button.addEventListener('click', (event) => {
+  toggleTheme({ origin: event })
+})`
+---
+
+<Base title="astro-eclipse: animated theme transitions for Astro">
+  <section class="wrap hero">
+    <div class="stack">
+      <span class="label">Astro integration</span>
+      <h1>Change the theme. Watch it happen.</h1>
+      <p class="lede">
+        astro-eclipse switches themes with a View Transition that starts where the visitor clicked. No flash on load, no
+        broken state across ClientRouter navigation, plain CSS for the palettes.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/gallery">
+          Open the gallery
+        </a>
+        <a class="btn btn-ghost" href="https://astro-eclipse-docs.vercel.app" rel="noopener">
+          Read the docs
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="live">
+    <div class="stack">
+      <h2 id="live">Try it here</h2>
+      <p class="muted">
+        Pick a theme. The reveal starts at the button you press. Choose system to follow your OS and see it change live.
+      </p>
+      <div class="frame">
+        <div class="frame-bar" aria-hidden="true">
+          <i></i>
+          <i></i>
+          <i></i>
+        </div>
+        <div class="frame-body">
+          <div class="chips" role="group" aria-label="Choose a theme">
+            {themes.map((name) => (
+              <button type="button" class="btn btn-ghost" data-set-theme={name} aria-pressed="false">
+                {name}
+              </button>
+            ))}
+          </div>
+          <p class="state">
+            Applied: <strong data-theme-name>…</strong>
+            <span class="muted"> / Preference: </span>
+            <strong data-theme-pref>…</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="why">
+    <div class="stack">
+      <h2 id="why">What you get</h2>
+      <ul class="grid">
+        {features.map((feature) => (
+          <li class="card">
+            <h3>{feature.title}</h3>
+            <p class="muted">{feature.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="install">
+    <div class="stack">
+      <h2 id="install">Install</h2>
+      <pre class="code"><code>{install}</code></pre>
+      <p class="muted">
+        Add the integration to <code>astro.config.mjs</code> and list your theme names.
+      </p>
+      <pre class="code"><code>{config}</code></pre>
+      <p class="muted">Then call the client API from any script.</p>
+      <pre class="code"><code>{usage}</code></pre>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="links">
+    <div class="stack">
+      <h2 id="links">Keep going</h2>
+      <p class="links">
+        <a class="btn btn-ghost" href="https://astro-eclipse-docs.vercel.app" rel="noopener">
+          Documentation
+        </a>
+        <a class="btn btn-ghost" href="https://www.npmjs.com/package/astro-eclipse" rel="noopener">
+          npm
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/jantursky/astro-eclipse" rel="noopener">
+          GitHub
+        </a>
+        <a class="btn btn-ghost" href="/navigation/a">
+          Navigation test
+        </a>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding-top: 80px;
+  }
+  .hero h1 {
+    max-width: 14ch;
+  }
+  .actions,
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .frame {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .frame-bar {
+    display: flex;
+    gap: 6px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .frame-bar i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-caption);
+  }
+  .frame-body {
+    padding: var(--card-padding);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chips .btn {
+    text-transform: capitalize;
+    min-height: 40px;
+  }
+  .state {
+    margin: 0;
+  }
+  .grid {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--gap);
+    width: 100%;
+  }
+  .card h3 {
+    margin-bottom: 12px;
+  }
+  .code {
+    width: 100%;
+  }
+</style>

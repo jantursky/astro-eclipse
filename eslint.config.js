@@ -40,6 +40,12 @@ export default defineConfig(
   },
 
   {
+    // The Astro parser resolves types in templates poorly: `.map()` over typed arrays reports `error` types.
+    files: ['**/*.astro'],
+    rules: { '@typescript-eslint/no-unsafe-return': 'off' },
+  },
+
+  {
     files: ['**/test/**/*.ts', '**/e2e/**/*.ts'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',

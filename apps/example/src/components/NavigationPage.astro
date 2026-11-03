@@ -1,0 +1,82 @@
+---
+import Base from '../layouts/Base.astro'
+
+interface Props {
+  id: 'a' | 'b' | 'c'
+}
+
+const { id } = Astro.props
+const pages = ['a', 'b', 'c'] as const
+---
+
+<Base title={`Navigation ${id.toUpperCase()}: astro-eclipse`}>
+  <section class="wrap head">
+    <div class="stack">
+      <span class="label">Navigation test</span>
+      <h1 class="title" data-testid="page-id">
+        Page {id.toUpperCase()}
+      </h1>
+      <p class="lede">
+        These pages are linked with the ClientRouter. Switch the theme here, then move between pages: the theme must
+        stay.
+      </p>
+      <dl class="card readout">
+        <div>
+          <dt>Applied theme</dt>
+          <dd data-theme-name data-testid="theme">
+            …
+          </dd>
+        </div>
+        <div>
+          <dt>Preference</dt>
+          <dd data-theme-pref data-testid="preference">
+            …
+          </dd>
+        </div>
+      </dl>
+      <nav aria-label="Navigation test pages" class="pages">
+        {pages.map((page) => (
+          <a class="btn btn-ghost" href={`/navigation/${page}`} aria-current={page === id ? 'page' : undefined}>
+            Page {page.toUpperCase()}
+          </a>
+        ))}
+      </nav>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding-top: 64px;
+  }
+  .title {
+    font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+  }
+  .readout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 24px;
+    margin: 0;
+    width: 100%;
+    max-width: 480px;
+  }
+  .readout dt {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .readout dd {
+    margin: 4px 0 0;
+    font-size: 1.875rem;
+  }
+  .pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .pages a[aria-current='page'] {
+    background: var(--surface-raised);
+    border-color: var(--accent-edge);
+  }
+</style>
