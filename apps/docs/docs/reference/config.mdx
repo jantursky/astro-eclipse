@@ -16,6 +16,7 @@ export default defineConfig({
       storageKey: 'eclipse-theme',
       transition: 'circle',
       duration: 500,
+      // colorScheme and themeColor are off unless you set them
     }),
   ],
 })
@@ -31,19 +32,23 @@ interface EclipseOptions {
   storageKey?: string
   transition?: string
   duration?: number
+  colorScheme?: Record<string, 'light' | 'dark'>
+  themeColor?: Record<string, string>
 }
 ```
 
 ## Options
 
-| Option       | Type                                | Default             | Description                                                                                                                   |
-| ------------ | ----------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `themes`     | `string[]`                          | `['light', 'dark']` | Theme names. Each is a value of `attribute`, or a class. `toggleTheme()` cycles them in this order.                           |
-| `default`    | `string`                            | `'system'`          | The theme used before the visitor chooses. `'system'` follows `prefers-color-scheme` and needs the themes `light` and `dark`. |
-| `attribute`  | `'class'` or `` `data-${string}` `` | `'data-theme'`      | `'class'` toggles a class per theme on `<html>`. A `data-*` name sets that attribute.                                         |
-| `storageKey` | `string`                            | `'eclipse-theme'`   | The `localStorage` key that holds the visitor's choice.                                                                       |
-| `transition` | `string`                            | `'circle'`          | The effect used when a call does not name one.                                                                                |
-| `duration`   | `number`                            | `500`               | Effect length in milliseconds. `0` turns the animation off.                                                                   |
+| Option        | Type                                | Default             | Description                                                                                                                   |
+| ------------- | ----------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `themes`      | `string[]`                          | `['light', 'dark']` | Theme names. Each is a value of `attribute`, or a class. `toggleTheme()` cycles them in this order.                           |
+| `default`     | `string`                            | `'system'`          | The theme used before the visitor chooses. `'system'` follows `prefers-color-scheme` and needs the themes `light` and `dark`. |
+| `attribute`   | `'class'` or `` `data-${string}` `` | `'data-theme'`      | `'class'` toggles a class per theme on `<html>`. A `data-*` name sets that attribute.                                         |
+| `storageKey`  | `string`                            | `'eclipse-theme'`   | The `localStorage` key that holds the visitor's choice.                                                                       |
+| `transition`  | `string`                            | `'circle'`          | The effect used when a call does not name one.                                                                                |
+| `duration`    | `number`                            | `500`               | Effect length in milliseconds. `0` turns the animation off.                                                                   |
+| `colorScheme` | `Record<string, 'light' \| 'dark'>` | not set             | Sets `color-scheme` on `<html>` per theme. See [browser chrome](/guides/browser-chrome).                                      |
+| `themeColor`  | `Record<string, string>`            | not set             | Sets `<meta name="theme-color">` per theme. See [browser chrome](/guides/browser-chrome).                                     |
 
 The value is also checked when the config loads, so a plain JavaScript config gets the same error.
 
@@ -53,6 +58,7 @@ The value is also checked when the config loads, so a plain JavaScript config ge
 - **`attribute`** `data-*` names must be lowercase letters, digits and dashes after `data-`.
 - **`default`** other than `system` must be one of `themes`.
 - **`transition`** is not validated against the registered effects. An unknown name makes every theme change instant. See [transitions](/guides/transitions).
+- **`colorScheme`** and **`themeColor`** keys must be in `themes`. Values of `colorScheme` are `light` or `dark`; values of `themeColor` are non-empty and cannot contain `<`.
 - **`duration`** is the default for `setTheme` and `toggleTheme`; either can override it per call.
 - Changing `themes`, `attribute` or `storageKey` after visitors have stored a choice: a stored value that is not in `themes` is ignored and `default` is used.
 

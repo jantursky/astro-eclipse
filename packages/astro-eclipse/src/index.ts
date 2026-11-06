@@ -3,7 +3,7 @@ import type { AstroIntegration } from 'astro'
 import { resolveConfig, type EclipseConfig, type EclipseOptions } from './config.js'
 import { buildHeadScript } from './head-script.js'
 
-export type { EclipseConfig, EclipseOptions } from './config.js'
+export type { ColorScheme, EclipseConfig, EclipseOptions } from './config.js'
 
 const VIRTUAL_ID = 'virtual:astro-eclipse/config'
 

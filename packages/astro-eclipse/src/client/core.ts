@@ -1,6 +1,7 @@
 import { SYSTEM, supportsSystem, type EclipseConfig } from '../config.js'
 import type { Origin } from './origin.js'
 import type { Direction } from './transitions.js'
+import { applyChrome } from './chrome.js'
 import { noop, runTransition, watchNavigation } from './runner.js'
 
 export interface ThemeChange {
@@ -71,6 +72,7 @@ export function createEclipse(config: EclipseConfig): Eclipse {
     } else {
       root.setAttribute(config.attribute, theme)
     }
+    applyChrome(document, theme, config)
   }
 
   function getTheme(): string {

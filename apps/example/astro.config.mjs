@@ -7,6 +7,8 @@ export default defineConfig({
       themes: ['light', 'dark', 'sepia', 'forest'],
       default: 'system',
       attribute: 'data-theme',
+      colorScheme: { light: 'light', dark: 'dark', sepia: 'light', forest: 'dark' },
+      themeColor: { light: '#ffffff', dark: '#111111', sepia: '#f4ecd8', forest: '#10241a' },
     }),
   ],
 })

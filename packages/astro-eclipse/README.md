@@ -55,6 +55,16 @@ export default defineConfig({
 })
 ```
 
+Native form controls, scrollbars and the mobile address bar follow the page when you map themes to a color scheme and a `theme-color`:
+
+```js
+eclipse({
+  themes: ['light', 'dark', 'sepia'],
+  colorScheme: { light: 'light', dark: 'dark', sepia: 'light' },
+  themeColor: { light: '#ffffff', dark: '#111111', sepia: '#f4ecd8' },
+})
+```
+
 The library only sets `data-theme="<name>"` on `<html>` (or a class, with `attribute: 'class'`). Colors stay in your CSS:
 
 ```css
@@ -143,7 +153,7 @@ An effect becomes an instant switch when `document.startViewTransition` is missi
 ## How it works
 
 1. `src/index.ts` validates your options and calls `injectScript('head-inline', ...)` with a script built from them (`src/head-script.ts`). It also serves the config to the client API as a virtual module (`virtual:astro-eclipse/config`).
-2. The inline script runs in `<head>`, before first paint. It reads the choice from `localStorage` (falling back to your `default`, or to `prefers-color-scheme`) and sets the attribute or class. It is about 435 B gzipped and has no dependencies.
+2. The inline script runs in `<head>`, before first paint. It reads the choice from `localStorage` (falling back to your `default`, or to `prefers-color-scheme`) and sets the attribute or class. It is about 480 B gzipped (up to 1 kB with `colorScheme` and `themeColor`) and has no dependencies.
 3. The same script keeps three things in sync without any client bundle: Astro's `astro:before-swap` (it sets the theme on the incoming document, so a `ClientRouter` page never paints the wrong theme), live `prefers-color-scheme` changes while the choice is `system`, and other tabs through the `storage` event.
 4. `astro-eclipse/client` (`src/client/core.ts`) stores the new choice, then applies it inside `document.startViewTransition` (`src/client/runner.ts`). After the browser reports the transition ready, it animates the old and new snapshots with the Web Animations API, using the keyframes of the chosen effect (`src/client/transitions.ts`).
 5. The update callback applies whatever is stored when it runs, not what the call asked for. Overlapping calls, in any order, end on the latest choice.

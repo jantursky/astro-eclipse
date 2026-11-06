@@ -137,6 +137,73 @@ describe('head script', () => {
     expect(newDocument.documentElement.dataset.theme).toBe('dark')
   })
 
+  describe('color scheme and theme color', () => {
+    const chrome = {
+      themes: ['light', 'dark', 'sepia'],
+      colorScheme: { light: 'light', dark: 'dark' },
+      themeColor: { light: '#fff', dark: '#111' },
+    } as const satisfies EclipseOptions
+    const options = (): EclipseOptions => ({ ...chrome, colorScheme: { ...chrome.colorScheme } })
+    const scheme = (root: HTMLElement = document.documentElement) => root.style.getPropertyValue('color-scheme')
+    const metas = (doc: Document = document) => [...doc.head.querySelectorAll('meta[name="theme-color"]')]
+
+    it('sets both before first paint', () => {
+      localStorage.setItem('eclipse-theme', 'dark')
+      runHeadScript(options())
+      expect(scheme()).toBe('dark')
+      expect(metas().map((meta) => meta.getAttribute('content'))).toEqual(['#111'])
+    })
+
+    it('updates the existing meta instead of adding another', () => {
+      document.head.innerHTML = '<meta name="theme-color" content="#abc">'
+      localStorage.setItem('eclipse-theme', 'light')
+      runHeadScript(options())
+      expect(metas().map((meta) => meta.getAttribute('content'))).toEqual(['#fff'])
+    })
+
+    it('leaves a meta with a media query alone and adds its own', () => {
+      document.head.innerHTML = '<meta name="theme-color" content="#abc" media="(min-width: 1px)">'
+      localStorage.setItem('eclipse-theme', 'dark')
+      runHeadScript(options())
+      expect(metas().map((meta) => meta.getAttribute('content'))).toEqual(['#abc', '#111'])
+    })
+
+    it('clears the color scheme and keeps the meta for an unmapped theme', () => {
+      localStorage.setItem('eclipse-theme', 'dark')
+      runHeadScript(options())
+      localStorage.setItem('eclipse-theme', 'sepia')
+      window.dispatchEvent(new StorageEvent('storage', { key: 'eclipse-theme' }))
+      expect(scheme()).toBe('')
+      expect(metas().map((meta) => meta.getAttribute('content'))).toEqual(['#111'])
+    })
+
+    it('follows the system theme live', () => {
+      runHeadScript({ ...options(), default: 'system' })
+      media.setDark(true)
+      expect(scheme()).toBe('dark')
+      expect(metas()[0]?.getAttribute('content')).toBe('#111')
+    })
+
+    it('prepares the incoming document on an Astro swap', () => {
+      localStorage.setItem('eclipse-theme', 'dark')
+      runHeadScript(options())
+      const newDocument = document.implementation.createHTMLDocument('next')
+      document.dispatchEvent(Object.assign(new Event('astro:before-swap'), { newDocument }))
+      expect(scheme(newDocument.documentElement)).toBe('dark')
+      expect(metas(newDocument).map((meta) => meta.getAttribute('content'))).toEqual(['#111'])
+    })
+
+    it('emits no color code when the options are absent', () => {
+      expect(buildHeadScript(config())).not.toContain('setProperty')
+      expect(buildHeadScript(config())).not.toContain('createElement')
+    })
+
+    it('stays within the 1 kB budget gzip with both options on', async () => {
+      const { gzipSync } = await import('node:zlib')
+      expect(gzipSync(buildHeadScript(config(options()))).length).toBeLessThan(1000)
+    })
+  })
+
   it('stays small', () => {
     expect(buildHeadScript(config()).length).toBeLessThan(1100)
   })

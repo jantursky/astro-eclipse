@@ -1,0 +1,30 @@
+---
+title: Browser chrome
+description: Keep native controls, scrollbars and the mobile address bar in step with the theme with colorScheme and themeColor.
+---
+
+CSS on your page cannot reach everything the browser draws. Native form controls, scrollbars and the default canvas follow the `color-scheme` property, and the mobile address bar follows `<meta name="theme-color">`. Two opt-in options keep both in step with the theme.
+
+```js astro.config.mjs
+eclipse({
+  themes: ['light', 'dark', 'sepia'],
+  colorScheme: { light: 'light', dark: 'dark', sepia: 'light' },
+  themeColor: { light: '#ffffff', dark: '#111111', sepia: '#f4ecd8' },
+})
+```
+
+## colorScheme
+
+Maps a theme to `light` or `dark`. When that theme applies, `color-scheme` is set on `<html>` as an inline style, so it beats a `color-scheme` rule in your stylesheet. That is the point for custom themes such as `sepia`: it tells the browser which of its two built-in looks to use. A theme with no entry removes the inline value, and your CSS decides again.
+
+## themeColor
+
+Maps a theme to a CSS color. The `content` of `<meta name="theme-color">` is set to it, and the tag is added to `<head>` if the page has none. Tags with a `media` attribute are left alone. A theme with no entry leaves the tag as it is.
+
+## When it runs
+
+At the same moments as the theme itself: in the [head script](/reference/head-script) before first paint, on the incoming document during [ClientRouter](/guides/clientrouter) swaps, after a system or cross-tab change, and in `setTheme`. Without these options the head script contains none of this code, and existing sites change nothing.
+
+## Not covered
+
+Only one untagged `theme-color` tag is managed. If your page sets its own `theme-color` after load, drop the option. `<meta name="color-scheme">` is not written.

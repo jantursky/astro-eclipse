@@ -6,6 +6,12 @@
     "limit": "700 B"
   },
   {
+    "name": "Inline head script (colorScheme + themeColor)",
+    "path": ".size/head-inline-chrome.js",
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
     "name": "Client API",
     "path": "dist/client/index.js",
     "import": "*",

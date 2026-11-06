@@ -15,6 +15,8 @@ export function buildHeadScript(config: EclipseConfig): string {
     a: config.attribute,
     k: config.storageKey,
     s: supportsSystem(config),
+    c: config.colorScheme,
+    m: config.themeColor,
   }).replace(/</g, '\\u003c')
 
   return (
@@ -27,7 +29,15 @@ export function buildHeadScript(config: EclipseConfig): string {
     `function r(){var v=p();return v=='system'?m.matches?'dark':'light':v}` +
     `function a(e){var t=r();` +
     `if(c.a=='class')c.t.forEach(function(x){e.classList.toggle(x,x==t)});` +
-    `else e.setAttribute(c.a,t)}` +
+    `else e.setAttribute(c.a,t)` +
+    (config.colorScheme
+      ? `;c.c[t]?e.style.setProperty('color-scheme',c.c[t]):e.style.removeProperty('color-scheme')`
+      : '') +
+    (config.themeColor
+      ? `;if(c.m[t]){var o=e.ownerDocument,q=o.head.querySelector('meta[name=theme-color]:not([media])');` +
+        `q||(q=o.createElement('meta'),q.name='theme-color',o.head.appendChild(q));q.content=c.m[t]}`
+      : '') +
+    `}` +
     `function u(){a(h);d.dispatchEvent(new CustomEvent('eclipse:change',{detail:{theme:r(),preference:p()}}))}` +
     `a(h);` +
     `m.addEventListener('change',function(){p()=='system'&&u()});` +

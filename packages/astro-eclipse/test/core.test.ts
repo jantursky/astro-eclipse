@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createEclipse, type ThemeChange } from '../src/client/core.js'
+import { buildHeadScript } from '../src/head-script.js'
 import { blockStorage, config, mockMedia, resetDom } from './helpers.js'
 
 import type { EclipseOptions } from '../src/config.js'
@@ -169,6 +170,56 @@ describe('createEclipse', () => {
       }).not.toThrow()
       expect(eclipse.onThemeChange(() => {})).toBeTypeOf('function')
       vi.unstubAllGlobals()
+    })
+  })
+
+  describe('color scheme and theme color', () => {
+    const chrome: EclipseOptions = {
+      themes: ['light', 'dark', 'sepia'],
+      colorScheme: { light: 'light', dark: 'dark' },
+      themeColor: { light: '#fff', dark: '#111' },
+    }
+    const scheme = (root: HTMLElement = document.documentElement) => root.style.getPropertyValue('color-scheme')
+    const color = () => document.head.querySelector('meta[name="theme-color"]')?.getAttribute('content')
+
+    it('updates both with the theme', () => {
+      const eclipse = setup(chrome)
+      eclipse.setTheme('dark')
+      expect(scheme()).toBe('dark')
+      expect(color()).toBe('#111')
+      eclipse.setTheme('light')
+      expect(scheme()).toBe('light')
+      expect(color()).toBe('#fff')
+    })
+
+    it('clears the scheme for an unmapped theme and leaves the meta', () => {
+      const eclipse = setup(chrome)
+      eclipse.setTheme('dark')
+      eclipse.setTheme('sepia')
+      expect(scheme()).toBe('')
+      expect(color()).toBe('#111')
+    })
+
+    it('writes nothing when the options are absent', () => {
+      setup().setTheme('dark')
+      expect(scheme()).toBe('')
+      expect(document.head.querySelector('meta[name="theme-color"]')).toBeNull()
+    })
+
+    it('agrees with the head script for every theme', () => {
+      for (const name of ['light', 'dark', 'sepia']) {
+        resetDom()
+        document.documentElement.style.removeProperty('color-scheme')
+        setup(chrome).setTheme(name)
+        const fromClient = [scheme(), color()]
+
+        resetDom()
+        document.documentElement.style.removeProperty('color-scheme')
+        localStorage.setItem('eclipse-theme', name)
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
+        new Function(buildHeadScript(config(chrome)))()
+        expect([scheme(), color()]).toEqual(fromClient)
+      }
     })
   })
 })

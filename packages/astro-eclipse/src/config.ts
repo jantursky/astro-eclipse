@@ -11,7 +11,13 @@ export interface EclipseOptions {
   transition?: string
   /** Effect duration in milliseconds. Default `500`. */
   duration?: number
+  /** Sets `color-scheme` on `<html>` per theme, so native controls and scrollbars match. Default: not set. */
+  colorScheme?: Record<string, ColorScheme>
+  /** Sets `<meta name="theme-color">` per theme, e.g. `{ dark: '#111' }`. Default: not set. */
+  themeColor?: Record<string, string>
 }
+
+export type ColorScheme = 'light' | 'dark'
 
 export interface EclipseConfig {
   themes: string[]
@@ -20,6 +26,8 @@ export interface EclipseConfig {
   storageKey: string
   transition: string
   duration: number
+  colorScheme?: Record<string, ColorScheme>
+  themeColor?: Record<string, string>
 }
 
 /** The value that follows `prefers-color-scheme`. Needs the themes `light` and `dark`. */
@@ -37,6 +45,8 @@ export function resolveConfig(options: EclipseOptions = {}): EclipseConfig {
     storageKey: options.storageKey ?? 'eclipse-theme',
     transition: options.transition ?? 'circle',
     duration: options.duration ?? 500,
+    ...(options.colorScheme && { colorScheme: options.colorScheme }),
+    ...(options.themeColor && { themeColor: options.themeColor }),
   }
 
   if (themes.length === 0) throw new Error('astro-eclipse: `themes` needs at least one theme.')
@@ -62,7 +72,25 @@ export function resolveConfig(options: EclipseOptions = {}): EclipseConfig {
   if (!Number.isFinite(config.duration) || config.duration < 0) {
     throw new Error('astro-eclipse: `duration` must be a number of milliseconds, 0 or more.')
   }
+  checkKeys('colorScheme', config.colorScheme, themes)
+  checkKeys('themeColor', config.themeColor, themes)
+  for (const [theme, value] of Object.entries<string>(config.colorScheme ?? {})) {
+    if (value !== 'light' && value !== 'dark') {
+      throw new Error(`astro-eclipse: \`colorScheme.${theme}\` must be "light" or "dark", got "${value}".`)
+    }
+  }
+  for (const [theme, value] of Object.entries(config.themeColor ?? {})) {
+    if (typeof value !== 'string' || value.trim() === '' || value.includes('<')) {
+      throw new Error(`astro-eclipse: \`themeColor.${theme}\` must be a non-empty CSS color without "<".`)
+    }
+  }
   return config
+}
+
+function checkKeys(option: string, map: Record<string, unknown> | undefined, themes: string[]): void {
+  for (const key of Object.keys(map ?? {})) {
+    if (!themes.includes(key)) throw new Error(`astro-eclipse: \`${option}\` key "${key}" is not in \`themes\`.`)
+  }
 }
 
 export function supportsSystem(config: Pick<EclipseConfig, 'themes'>): boolean {

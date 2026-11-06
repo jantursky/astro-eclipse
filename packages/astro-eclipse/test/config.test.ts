@@ -36,8 +36,19 @@ describe('resolveConfig', () => {
     [{ storageKey: '' }, /storageKey/],
     [{ duration: -1 }, /duration/],
     [{ duration: Number.NaN }, /duration/],
+    [{ colorScheme: { sepia: 'light' } }, /colorScheme.*"sepia" is not in `themes`/],
+    [{ colorScheme: { dark: 'darker' } }, /"light" or "dark"/],
+    [{ themeColor: { sepia: '#fff' } }, /themeColor.*"sepia" is not in `themes`/],
+    [{ themeColor: { dark: '' } }, /non-empty CSS color/],
+    [{ themeColor: { dark: '<b>' } }, /without "<"/],
   ])('rejects %j', (options, message) => {
     // Invalid values are the point of this test, so they bypass the option types.
     expect(() => resolveConfig(options as EclipseOptions)).toThrow(message)
+  })
+
+  it('keeps colorScheme and themeColor when valid', () => {
+    const config = resolveConfig({ colorScheme: { dark: 'dark' }, themeColor: { light: '#fff', dark: '#111' } })
+    expect(config.colorScheme).toEqual({ dark: 'dark' })
+    expect(config.themeColor).toEqual({ light: '#fff', dark: '#111' })
   })
 })
