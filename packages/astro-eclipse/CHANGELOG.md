@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-11-06
+
+### Added
+
+- `colorScheme` option: maps a theme to `light` or `dark` and sets `color-scheme` on `<html>`, so native controls and scrollbars match custom themes.
+- `themeColor` option: maps a theme to a color and keeps `<meta name="theme-color">` in step, creating the tag when missing.
+- Both are opt-in, apply before first paint, on ClientRouter swaps, on system and cross-tab changes and in `setTheme`, and add no code to the head script when unset.
+
+### Changed
+
+- Head script budget for a config with both options is 1 kB gzip (default config stays under 700 B).
+
 ## [1.0.0] - 2026-11-03
 
 ### Added
