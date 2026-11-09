@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-11-09
+
+### Added
+
+- `forcedTheme` option: a page with `<html data-eclipse-forced="dark">` shows that theme on first paint, after ClientRouter navigation and after `setTheme`, without touching the visitor's saved choice. `getTheme()` returns the forced theme, `getPreference()` the stored one, and `setTheme` stores without applying. `ThemeToggle`, `ThemeSelect` and `ThemeRadio` are disabled on a forced page. Adds about 45 B to the head script only when turned on.
+- `disableCssTransitions` option: suppresses CSS transitions and animations for the frame of a theme change made through the client API, so elements with their own `transition` change with the reveal.
+- `ThemeChange.forced`: the forced theme, or `undefined`.
+
+### Changed
+
+- The client API size budget is 4.7 kB (was 4.5 kB).
+
 ## [1.4.0] - 2026-11-09
 
 ### Added
