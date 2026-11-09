@@ -34,6 +34,10 @@ sync()
 
 A native `<button>` already works with Enter and Space. A keyboard click reveals from the center of the button.
 
+## Pick from a list
+
+To let visitors pick a theme directly, [`ThemeSelect`](/guides/theme-select) renders a native `<select>` with an accessible name from its `label` prop (`Theme` by default), so keyboard and screen reader behavior come from the browser.
+
 ## Announcements
 
 Astro Eclipse announces nothing. The change is visible, and `aria-pressed` on the button already tells a screen reader user the state when they focus it. If you want a spoken confirmation, add a polite live region and write to it on change:

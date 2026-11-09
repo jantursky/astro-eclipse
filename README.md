@@ -111,6 +111,16 @@ import { ThemeToggle } from 'astro-eclipse/components'
 <ThemeToggle themes={['light', 'dark']} transition="wipe" />
 ```
 
+Or a select that also offers `System`:
+
+```astro
+---
+import { ThemeSelect } from 'astro-eclipse/components'
+---
+
+<ThemeSelect labels={{ system: 'Automatic' }} />
+```
+
 ## Transitions
 
 | Name             | What it does                                                      | Uses `origin` | Uses `direction` |

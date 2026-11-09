@@ -7,6 +7,7 @@ export default defineMeta({
     'css-variables',
     'tailwind',
     'theme-toggle',
+    'theme-select',
     'browser-chrome',
     'transitions',
     'custom-transition',

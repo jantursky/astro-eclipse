@@ -1,0 +1,49 @@
+---
+title: ThemeSelect
+description: A native select that lists your themes and a System option, so visitors can pick one directly.
+---
+
+`ThemeSelect` is an Astro component with almost no styling. It renders a native `<select>` with one option per theme, followed by `System` ("follow my device"). It shows the visitor's _preference_, so `System` stays selected while the page itself is dark, and it starts the reveal at the select.
+
+```astro
+---
+import { ThemeSelect } from 'astro-eclipse/components'
+---
+
+<ThemeSelect />
+<ThemeSelect label="Farbschema" labels={{ light: 'Hell', dark: 'Dunkel', system: 'Automatisch' }} />
+<ThemeSelect themes={['light', 'dark']} system={false} transition="wipe" />
+```
+
+## Props
+
+| Prop         | Type                                  | Default                               | Notes                                                                                    |
+| ------------ | ------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `themes`     | `string[]`                            | every theme in config                 | The options, in order. Names must be in `themes`.                                        |
+| `system`     | `boolean`                             | `true` when config has light and dark | Adds the `System` option. `false` removes it. `true` without light and dark fails build. |
+| `labels`     | `Record<string, string>`              | the theme name, and `System`          | Option text per theme. Use the key `system` for the system option.                       |
+| `label`      | `string`                              | `Theme`                               | The accessible name.                                                                     |
+| `transition` | `string`                              | the config's `transition`             | Any built-in or `defineTransition()` name.                                               |
+| `duration`   | `number`                              | the config's `duration`               | Milliseconds.                                                                            |
+| `direction`  | `'up' \| 'down' \| 'left' \| 'right'` | `'right'`                             | For `wipe` and `blinds`.                                                                 |
+| `class`      | `string`                              | none                                  | Added next to the `eclipse-select` class.                                                |
+
+Any other attribute (`id`, `aria-*`, `data-*`) is passed to the `<select>`. `themes` must be a non-empty subset of the configured themes and cannot contain `system`; a wrong value fails the build with a message that lists the configured themes.
+
+## Accessible name
+
+The select has no visible label of its own, so `aria-label` carries the name (`Theme` by default). Translate it with the `label` prop. For a visible label, point `aria-labelledby` at it (`<ThemeSelect aria-labelledby="theme-label" />`): it wins over `aria-label`, whereas a plain `<label for>` does not.
+
+Nothing is announced when the theme changes. See [accessibility](/guides/accessibility) if your site wants a live region.
+
+## Styling
+
+The component ships low-specificity rules (`:where(.eclipse-select)`), so any selector of yours wins. In forced-colors mode it uses `Field`, `FieldText`, `ButtonText` and `Highlight`, so it stays visible. The open list is drawn by the browser; style it with `color-scheme`, which the [`colorScheme` option](/guides/browser-chrome) sets per theme.
+
+## ClientRouter
+
+One `change` listener on `document` serves every select on the page, so selects that arrive with a navigation work without rebinding. The selection is refreshed on `astro:page-load`, on theme changes from other controls or tabs, and when the system scheme changes in `System` mode.
+
+## Not checked
+
+The component is tested in Chromium and WebKit (options, selection, storage, `System`, sync between selects, navigation, type-ahead, axe in every theme) and rejects bad `themes` at build time in the packed-tarball test. Firefox runs in CI but has not been run by hand, forced-colors mode is not checked, and the arrow keys are not driven in the tests because macOS browsers open the list on the first press.

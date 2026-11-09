@@ -1,0 +1,132 @@
+---
+import config from 'virtual:astro-eclipse/config'
+
+export interface Props {
+  /** Themes to list, in order. Default: every theme in the config. */
+  themes?: string[]
+  /** Include a `System` option that follows the device. Default: true when the config has `light` and `dark`. */
+  system?: boolean
+  /** Display text per theme; `system` sets the text of the system option. Default: the theme name, and `System`. */
+  labels?: Record<string, string>
+  /** The accessible name. Default `Theme`. */
+  label?: string
+  /** Effect for this control. Default: the config's `transition`. */
+  transition?: string
+  duration?: number
+  /** Which way `wipe` and `blinds` travel. */
+  direction?: 'up' | 'down' | 'left' | 'right'
+  class?: string
+}
+
+const {
+  themes = config.themes,
+  system,
+  labels = {},
+  label = 'Theme',
+  transition,
+  duration,
+  direction,
+  class: className,
+  ...attributes
+} = Astro.props
+
+const unknown = themes.filter((theme) => !config.themes.includes(theme))
+if (themes.length === 0 || unknown.length > 0 || themes.includes('system')) {
+  throw new Error(
+    `astro-eclipse: ThemeSelect \`themes\` must be a non-empty subset of ${config.themes.join(', ')}, without "system". Got: ${themes.join(', ') || 'none'}.`,
+  )
+}
+
+const canSystem = config.themes.includes('light') && config.themes.includes('dark')
+if (system === true && !canSystem) {
+  throw new Error('astro-eclipse: ThemeSelect `system` needs the themes "light" and "dark" in the config.')
+}
+const withSystem = system !== false && canSystem
+
+const options = [
+  ...themes.map((theme) => ({ value: theme, text: labels[theme] ?? theme })),
+  ...(withSystem ? [{ value: 'system', text: labels.system ?? 'System' }] : []),
+]
+const initial = options.some((option) => option.value === config.default) ? config.default : options[0]?.value
+---
+
+<select
+  {...attributes}
+  class:list={['eclipse-select', className]}
+  data-eclipse-select
+  data-transition={transition}
+  data-duration={duration}
+  data-direction={direction}
+  aria-label={label}
+>
+  {options.map((option) => (
+    <option value={option.value} selected={option.value === initial}>
+      {option.text}
+    </option>
+  ))}
+</select>
+
+<script>
+  import { getPreference, onThemeChange, setTheme, type SetThemeOptions } from 'astro-eclipse/client'
+
+  const SELECTOR = 'select[data-eclipse-select]'
+
+  /** Shows the visitor's preference, which can be `system` while the applied theme is `dark`. */
+  function sync(): void {
+    const preference = getPreference()
+    for (const select of document.querySelectorAll<HTMLSelectElement>(SELECTOR)) {
+      if (select.value !== preference && [...select.options].some((option) => option.value === preference)) {
+        select.value = preference
+      }
+    }
+  }
+
+  function options(select: HTMLSelectElement): SetThemeOptions {
+    const { transition, duration, direction } = select.dataset
+    return {
+      origin: select,
+      ...(transition && { transition }),
+      ...(duration && { duration: Number(duration) }),
+      ...(direction && { direction: direction as SetThemeOptions['direction'] }),
+    }
+  }
+
+  // One listener for every select on the page, so selects swapped in by ClientRouter work without rebinding.
+  const flag = '__eclipseSelect'
+  if (!(flag in window)) {
+    Object.defineProperty(window, flag, { value: true })
+    document.addEventListener('change', (event) => {
+      const select = event.target instanceof Element ? event.target.closest<HTMLSelectElement>(SELECTOR) : null
+      if (select) setTheme(select.value, options(select))
+    })
+    onThemeChange(sync)
+    document.addEventListener('astro:page-load', sync)
+  }
+  sync()
+</script>
+
+<style is:global>
+  :where(.eclipse-select) {
+    padding: 0.4em 0.6em;
+    border: 1px solid currentColor;
+    border-radius: 0.5em;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  :where(.eclipse-select):focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  @media (forced-colors: active) {
+    :where(.eclipse-select) {
+      border-color: ButtonText;
+      color: FieldText;
+      background: Field;
+    }
+    :where(.eclipse-select):focus-visible {
+      outline-color: Highlight;
+    }
+  }
+</style>

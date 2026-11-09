@@ -46,13 +46,14 @@ export default defineConfig({ integrations: [eclipse({ themes: ['light', 'dark',
   write(
     'src/pages/index.astro',
     `---
-import { ThemeToggle } from 'astro-eclipse/components'
+import { ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
 ---
 <html lang="en">
   <head><meta charset="utf-8" /><title>pack test</title></head>
   <body>
     <button id="toggle">toggle</button>
     <ThemeToggle themes={['light', 'dark']} transition="wipe" />
+    <ThemeSelect labels={{ dark: 'Night' }} />
     <script>
       import { toggleTheme, getTheme } from 'astro-eclipse/client'
       document.getElementById('toggle')?.addEventListener('click', (event) => toggleTheme({ origin: event }))
@@ -66,6 +67,8 @@ import { ThemeToggle } from 'astro-eclipse/components'
 
   const html = readFileSync(join(dir, 'dist/index.html'), 'utf8')
   if (!html.includes('data-eclipse-toggle')) throw new Error('ThemeToggle was not rendered')
+  if (!html.includes('data-eclipse-select') || !html.includes('>Night<'))
+    throw new Error('ThemeSelect was not rendered')
   if (!html.includes('eclipse-theme')) throw new Error('The inline head script is missing from the built page')
   // Astro inlines small scripts into the page, so look in the HTML and in the emitted assets.
   const assetDir = join(dir, 'dist/_astro')
@@ -73,6 +76,33 @@ import { ThemeToggle } from 'astro-eclipse/components'
   const bundled = [html, ...assets.map((name) => readFileSync(join(assetDir, name), 'utf8'))].join('\n')
   if (!bundled.includes('eclipse:change')) throw new Error('The client API is missing from the built site')
   console.log('built a fresh Astro site: head script inlined, client API bundled')
+
+  // Invalid `themes` must fail the build with a message that names the problem.
+  for (const [themes, message] of [
+    ['[]', 'non-empty subset'],
+    ["['light', 'neon']", 'Got: light, neon'],
+    ["['light', 'system']", 'without "system"'],
+  ]) {
+    write(
+      'src/pages/bad.astro',
+      `---
+import { ThemeSelect } from 'astro-eclipse/components'
+---
+<ThemeSelect themes={${themes}} />
+`,
+    )
+    let output = ''
+    try {
+      run('npx', ['astro', 'build'], dir)
+    } catch (error) {
+      output = `${error.stdout ?? ''}${error.stderr ?? ''}`
+    }
+    if (!output.includes('ThemeSelect `themes`') || !output.includes(message)) {
+      throw new Error(`ThemeSelect with themes=${themes} did not fail the build with "${message}"`)
+    }
+  }
+  rmSync(join(dir, 'src/pages/bad.astro'))
+  console.log('ThemeSelect rejects invalid themes at build time')
 } finally {
   rmSync(dir, { recursive: true, force: true })
 }

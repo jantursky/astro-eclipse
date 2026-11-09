@@ -1,5 +1,5 @@
 ---
-import { ThemeToggle } from 'astro-eclipse/components'
+import { ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
 import Base from '../layouts/Base.astro'
 ---
 
@@ -23,6 +23,32 @@ import Base from '../layouts/Base.astro'
       <p class="caption">
         <a href="/navigation/a">Go to a navigation page</a>: the buttons keep working there.
       </p>
+    </div>
+  </section>
+  <section class="wrap head">
+    <div class="stack">
+      <span class="label">Component</span>
+      <h2 class="title">ThemeSelect</h2>
+      <p class="lede">
+        A native select that lists the themes and a System option. It shows your preference, so System stays selected
+        while the page is dark.
+      </p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <div class="card stack">
+      <h2>Default: every theme plus System</h2>
+      <ThemeSelect data-testid="select-default" />
+      <h2>Custom labels, wipe</h2>
+      <ThemeSelect
+        data-testid="select-labels"
+        label="Farbschema"
+        labels={{ light: 'Hell', dark: 'Dunkel', system: 'Automatisch' }}
+        transition="wipe"
+        direction="down"
+      />
+      <h2>Two themes, no System</h2>
+      <ThemeSelect data-testid="select-plain" themes={['light', 'dark']} system={false} />
     </div>
   </section>
 </Base>
