@@ -1,6 +1,6 @@
 ---
 title: Client API
-description: setTheme, toggleTheme, getTheme, getPreference, onThemeChange, defineTransition and getTransition, with signatures and error cases.
+description: setTheme, toggleTheme, getTheme, getPreference, getSystemTheme, themes, onThemeChange, defineTransition and getTransition, with signatures and error cases.
 ---
 
 ```ts
@@ -9,6 +9,8 @@ import {
   toggleTheme,
   getTheme,
   getPreference,
+  getSystemTheme,
+  themes,
   onThemeChange,
   defineTransition,
   getTransition,
@@ -72,6 +74,22 @@ function getPreference(): string
 ```
 
 What the visitor chose: a theme name, or `'system'`. Reads `localStorage`, falls back to the in-memory value when storage throws, and returns the config `default` when nothing valid is stored.
+
+## getSystemTheme
+
+```ts
+function getSystemTheme(): 'light' | 'dark'
+```
+
+The scheme the device prefers right now, whatever the visitor chose. `getTheme()` can be `light` while `getSystemTheme()` is `dark`. On the server, and where `matchMedia` is missing, it returns `'light'`.
+
+## themes
+
+```ts
+const themes: readonly string[]
+```
+
+The configured theme names, in order. It never contains `'system'`, and the array is frozen. Use it to build your own control without repeating the list from `astro.config`.
 
 ## onThemeChange
 

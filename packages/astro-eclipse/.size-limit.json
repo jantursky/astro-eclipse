@@ -18,5 +18,13 @@
     "ignore": ["virtual:astro-eclipse/config"],
     "gzip": true,
     "limit": "4.5 kB"
+  },
+  {
+    "name": "Headless module (own code)",
+    "path": ".size/headless.js",
+    "import": "*",
+    "ignore": ["astro-eclipse/client"],
+    "gzip": true,
+    "limit": "400 B"
   }
 ]

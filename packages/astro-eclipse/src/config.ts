@@ -15,6 +15,8 @@ export interface EclipseOptions {
   colorScheme?: Record<string, ColorScheme>
   /** Sets `<meta name="theme-color">` per theme, e.g. `{ dark: '#111' }`. Default: not set. */
   themeColor?: Record<string, string>
+  /** Lets any element with `data-eclipse-set="<theme>"` switch the theme on click. Adds a small script to every page. Default: false. */
+  headless?: boolean
 }
 
 export type ColorScheme = 'light' | 'dark'
@@ -28,6 +30,7 @@ export interface EclipseConfig {
   duration: number
   colorScheme?: Record<string, ColorScheme>
   themeColor?: Record<string, string>
+  headless?: true
 }
 
 /** The value that follows `prefers-color-scheme`. Needs the themes `light` and `dark`. */
@@ -47,6 +50,7 @@ export function resolveConfig(options: EclipseOptions = {}): EclipseConfig {
     duration: options.duration ?? 500,
     ...(options.colorScheme && { colorScheme: options.colorScheme }),
     ...(options.themeColor && { themeColor: options.themeColor }),
+    ...(options.headless === true && { headless: true as const }),
   }
 
   if (themes.length === 0) throw new Error('astro-eclipse: `themes` needs at least one theme.')
@@ -71,6 +75,9 @@ export function resolveConfig(options: EclipseOptions = {}): EclipseConfig {
   if (config.storageKey === '') throw new Error('astro-eclipse: `storageKey` cannot be empty.')
   if (!Number.isFinite(config.duration) || config.duration < 0) {
     throw new Error('astro-eclipse: `duration` must be a number of milliseconds, 0 or more.')
+  }
+  if (options.headless !== undefined && typeof options.headless !== 'boolean') {
+    throw new Error('astro-eclipse: `headless` must be true or false.')
   }
   checkKeys('colorScheme', config.colorScheme, themes)
   checkKeys('themeColor', config.themeColor, themes)

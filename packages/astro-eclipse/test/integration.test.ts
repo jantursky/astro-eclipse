@@ -22,6 +22,18 @@ describe('eclipse integration', () => {
     expect(injectScript).toHaveBeenCalledWith('head-inline', expect.stringContaining('"k":"my-theme"'))
   })
 
+  it('injects no page script by default', () => {
+    const { injectScript } = setup()
+    expect(injectScript).toHaveBeenCalledTimes(1)
+    expect(injectScript).not.toHaveBeenCalledWith('page', expect.anything())
+  })
+
+  it('injects the headless module as a page script when `headless` is on', () => {
+    const { injectScript } = setup({ headless: true })
+    expect(injectScript).toHaveBeenCalledWith('page', "import 'astro-eclipse/client/headless'")
+    expect(injectScript).toHaveBeenCalledWith('head-inline', expect.any(String))
+  })
+
   it('serves the resolved config as a virtual module', () => {
     const { plugin } = setup({ themes: ['light', 'dark', 'sepia'], duration: 300 })
     const id = plugin.resolveId!('virtual:astro-eclipse/config') as string

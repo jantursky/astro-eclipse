@@ -1,0 +1,51 @@
+---
+title: ThemeRadio
+description: A radio group that shows every theme and a System option at once, with native keyboard behavior.
+---
+
+`ThemeRadio` is an Astro component with almost no styling. It renders a `<fieldset>` with a `<legend>` and one native radio input per theme, followed by `System` ("follow my device"). Use it where the choices should all be visible; use [`ThemeSelect`](/guides/theme-select) where space is tight. It shows the visitor's _preference_, so `System` stays checked while the page itself is dark, and it starts the reveal at the radio that was chosen.
+
+```astro
+---
+import { ThemeRadio } from 'astro-eclipse/components'
+---
+
+<ThemeRadio />
+<ThemeRadio label="Farbschema" labels={{ light: 'Hell', dark: 'Dunkel', system: 'Automatisch' }} />
+<ThemeRadio themes={['light', 'dark']} system={false} transition="wipe" />
+```
+
+## Props
+
+| Prop         | Type                                  | Default                               | Notes                                                                                    |
+| ------------ | ------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `themes`     | `string[]`                            | every theme in config                 | The options, in order. Names must be in `themes`.                                        |
+| `system`     | `boolean`                             | `true` when config has light and dark | Adds the `System` option. `false` removes it. `true` without light and dark fails build. |
+| `labels`     | `Record<string, string>`              | the theme name, and `System`          | Option text per theme. Use the key `system` for the system option.                       |
+| `label`      | `string`                              | `Theme`                               | The group's name: the text of the legend.                                                |
+| `transition` | `string`                              | the config's `transition`             | Any built-in or `defineTransition()` name.                                               |
+| `duration`   | `number`                              | the config's `duration`               | Milliseconds.                                                                            |
+| `direction`  | `'up' \| 'down' \| 'left' \| 'right'` | `'right'`                             | For `wipe` and `blinds`.                                                                 |
+| `class`      | `string`                              | none                                  | Added next to the `eclipse-radio` class.                                                 |
+
+Any other attribute (`id`, `aria-*`, `data-*`) is passed to the `<fieldset>`. `themes` must be a non-empty subset of the configured themes and cannot contain `system`; a wrong value fails the build with a message that lists the configured themes.
+
+## Accessible name and keyboard
+
+The legend names the group, so a screen reader announces it with the checked option. The radios share one `name` per group, which gives the browser's own keyboard behavior: Tab moves to the checked radio, and the arrow keys move between options and change the theme. The component numbers its groups per page (`eclipse-theme-1`, `eclipse-theme-2`, ...), so several on one page do not uncheck each other.
+
+The legend is visible. To hide it and keep the name, give the group a `class` and visually hide `.your-class legend` with your usual screen-reader-only rule.
+
+Nothing is announced when the theme changes. See [accessibility](/guides/accessibility) if your site wants a live region.
+
+## Styling
+
+The component ships low-specificity rules (`:where(.eclipse-radio)`), so any selector of yours wins. The inputs are native; style them with `accent-color`. In forced-colors mode the focus ring uses `Highlight`.
+
+## ClientRouter
+
+One `change` listener on `document` serves every group on the page, so groups that arrive with a navigation work without rebinding. The checked radio is refreshed on `astro:page-load`, on theme changes from other controls or tabs, and when the system scheme changes in `System` mode.
+
+## Not checked
+
+Tested in Chromium and WebKit (options, selection, storage, `System`, arrow keys, sync between groups and with a select, navigation, axe in every theme) and rejected for bad `themes` at build time in the packed-tarball test. Firefox runs in CI but has not been run by hand, and forced-colors mode is not checked.

@@ -1,0 +1,145 @@
+---
+import config from 'virtual:astro-eclipse/config'
+
+export interface Props {
+  /** Themes to list, in order. Default: every theme in the config. */
+  themes?: string[]
+  /** Include a `System` option that follows the device. Default: true when the config has `light` and `dark`. */
+  system?: boolean
+  /** Display text per theme; `system` sets the text of the system option. Default: the theme name, and `System`. */
+  labels?: Record<string, string>
+  /** The group's name, shown as its legend and read by assistive technology. Default `Theme`. */
+  label?: string
+  /** Effect for this control. Default: the config's `transition`. */
+  transition?: string
+  duration?: number
+  /** Which way `wipe` and `blinds` travel. */
+  direction?: 'up' | 'down' | 'left' | 'right'
+  class?: string
+}
+
+const {
+  themes = config.themes,
+  system,
+  labels = {},
+  label = 'Theme',
+  transition,
+  duration,
+  direction,
+  class: className,
+  ...attributes
+} = Astro.props
+
+const unknown = themes.filter((theme) => !config.themes.includes(theme))
+if (themes.length === 0 || unknown.length > 0 || themes.includes('system')) {
+  throw new Error(
+    `astro-eclipse: ThemeRadio \`themes\` must be a non-empty subset of ${config.themes.join(', ')}, without "system". Got: ${themes.join(', ') || 'none'}.`,
+  )
+}
+
+const canSystem = config.themes.includes('light') && config.themes.includes('dark')
+if (system === true && !canSystem) {
+  throw new Error('astro-eclipse: ThemeRadio `system` needs the themes "light" and "dark" in the config.')
+}
+const withSystem = system !== false && canSystem
+
+const options = [
+  ...themes.map((theme) => ({ value: theme, text: labels[theme] ?? theme })),
+  ...(withSystem ? [{ value: 'system', text: labels.system ?? 'System' }] : []),
+]
+const initial = options.some((option) => option.value === config.default) ? config.default : options[0]?.value
+
+// Radios that share a `name` form one group for the whole page, so two ThemeRadio on a page would uncheck each
+// other. Number them per render, which is per page, so the names are stable from build to build.
+const locals = Astro.locals as Record<string, unknown>
+const count = typeof locals.__eclipseRadios === 'number' ? locals.__eclipseRadios + 1 : 1
+locals.__eclipseRadios = count
+const name = `eclipse-theme-${count}`
+---
+
+<fieldset
+  {...attributes}
+  class:list={['eclipse-radio', className]}
+  data-eclipse-radio
+  data-transition={transition}
+  data-duration={duration}
+  data-direction={direction}
+>
+  <legend>{label}</legend>
+  {options.map((option) => (
+    <label>
+      <input type="radio" name={name} value={option.value} checked={option.value === initial} />
+      <span>{option.text}</span>
+    </label>
+  ))}
+</fieldset>
+
+<script>
+  import { getPreference, onThemeChange, setTheme, type SetThemeOptions } from 'astro-eclipse/client'
+
+  const SELECTOR = 'fieldset[data-eclipse-radio]'
+
+  /** Checks the radio for the visitor's preference, which can be `system` while the applied theme is `dark`. */
+  function sync(): void {
+    const preference = getPreference()
+    for (const radio of document.querySelectorAll<HTMLInputElement>(`${SELECTOR} input[type="radio"]`)) {
+      radio.checked = radio.value === preference
+    }
+  }
+
+  function options(group: HTMLElement, radio: HTMLInputElement): SetThemeOptions {
+    const { transition, duration, direction } = group.dataset
+    return {
+      origin: radio,
+      ...(transition && { transition }),
+      ...(duration && { duration: Number(duration) }),
+      ...(direction && { direction: direction as SetThemeOptions['direction'] }),
+    }
+  }
+
+  // One listener for every group on the page, so groups swapped in by ClientRouter work without rebinding.
+  const flag = '__eclipseRadio'
+  if (!(flag in window)) {
+    Object.defineProperty(window, flag, { value: true })
+    document.addEventListener('change', (event) => {
+      const radio = event.target instanceof HTMLInputElement && event.target.type === 'radio' ? event.target : null
+      const group = radio?.closest<HTMLElement>(SELECTOR)
+      if (radio && group) setTheme(radio.value, options(group, radio))
+    })
+    onThemeChange(sync)
+    document.addEventListener('astro:page-load', sync)
+  }
+  sync()
+</script>
+
+<style is:global>
+  :where(.eclipse-radio) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25em 1em;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
+  }
+  :where(.eclipse-radio) legend {
+    padding: 0;
+    margin-block-end: 0.25em;
+    inline-size: 100%;
+  }
+  :where(.eclipse-radio) label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    cursor: pointer;
+  }
+  :where(.eclipse-radio) input:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  @media (forced-colors: active) {
+    :where(.eclipse-radio) input:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+</style>

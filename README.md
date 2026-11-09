@@ -121,6 +121,22 @@ import { ThemeSelect } from 'astro-eclipse/components'
 <ThemeSelect labels={{ system: 'Automatic' }} />
 ```
 
+Or a radio group, which shows every choice at once:
+
+```astro
+---
+import { ThemeRadio } from 'astro-eclipse/components'
+---
+
+<ThemeRadio label="Color theme" />
+```
+
+For markdown or CMS content, turn on `headless: true` and add `data-eclipse-set="dark"` to any element:
+
+```html
+<a href="#" data-eclipse-set="dark">Dark</a>
+```
+
 ## Transitions
 
 | Name             | What it does                                                      | Uses `origin` | Uses `direction` |

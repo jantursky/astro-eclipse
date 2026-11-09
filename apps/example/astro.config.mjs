@@ -6,6 +6,7 @@ export default defineConfig({
     eclipse({
       themes: ['light', 'dark', 'sepia', 'forest'],
       default: 'system',
+      headless: true,
       attribute: 'data-theme',
       colorScheme: { light: 'light', dark: 'dark', sepia: 'light', forest: 'dark' },
       themeColor: { light: '#ffffff', dark: '#111111', sepia: '#f4ecd8', forest: '#10241a' },

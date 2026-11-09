@@ -28,6 +28,10 @@
       "types": "./dist/client/index.d.ts",
       "default": "./dist/client/index.js"
     },
+    "./client/headless": {
+      "types": "./dist/client/headless.d.ts",
+      "default": "./dist/client/headless.js"
+    },
     "./components": {
       "types": "./dist/components/index.d.ts",
       "default": "./dist/components/index.js"
@@ -40,7 +44,9 @@
     "CHANGELOG.md",
     "LICENSE"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/client/headless.js"
+  ],
   "engines": {
     "node": ">=22.12"
   },

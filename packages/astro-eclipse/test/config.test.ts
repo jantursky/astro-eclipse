@@ -41,9 +41,17 @@ describe('resolveConfig', () => {
     [{ themeColor: { sepia: '#fff' } }, /themeColor.*"sepia" is not in `themes`/],
     [{ themeColor: { dark: '' } }, /non-empty CSS color/],
     [{ themeColor: { dark: '<b>' } }, /without "<"/],
+    [{ headless: 'yes' }, /`headless` must be true or false/],
+    [{ headless: 1 }, /`headless` must be true or false/],
   ])('rejects %j', (options, message) => {
     // Invalid values are the point of this test, so they bypass the option types.
     expect(() => resolveConfig(options as EclipseOptions)).toThrow(message)
+  })
+
+  it('leaves headless out unless it is on', () => {
+    expect(resolveConfig()).not.toHaveProperty('headless')
+    expect(resolveConfig({ headless: false })).not.toHaveProperty('headless')
+    expect(resolveConfig({ headless: true }).headless).toBe(true)
   })
 
   it('keeps colorScheme and themeColor when valid', () => {

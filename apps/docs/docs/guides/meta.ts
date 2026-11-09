@@ -9,6 +9,8 @@ export default defineMeta({
     'shadcn',
     'theme-toggle',
     'theme-select',
+    'theme-radio',
+    'headless',
     'browser-chrome',
     'transitions',
     'custom-transition',

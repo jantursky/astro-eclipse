@@ -3,6 +3,6 @@ import { cpSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = join(import.meta.dirname, '..')
-for (const name of ['ThemeToggle', 'ThemeSelect']) {
+for (const name of ['ThemeToggle', 'ThemeSelect', 'ThemeRadio']) {
   cpSync(join(root, `src/components/${name}.astro`), join(root, `dist/components/${name}.astro`))
 }

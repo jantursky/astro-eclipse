@@ -30,6 +30,10 @@ export interface Eclipse {
   /** What the visitor chose: a theme name, or `'system'`. */
   getPreference: () => string
   onThemeChange: (listener: (change: ThemeChange) => void) => () => void
+  /** The scheme the device prefers right now, whatever the visitor chose. `'light'` where it cannot be read. */
+  getSystemTheme: () => 'light' | 'dark'
+  /** The configured theme names, in order. Never contains `'system'`. */
+  themes: readonly string[]
 }
 
 export const CHANGE_EVENT = 'eclipse:change'
@@ -60,9 +64,12 @@ export function createEclipse(config: EclipseConfig): Eclipse {
     return stored != null && isPreference(stored) ? stored : config.default
   }
 
-  function resolve(preference: string): string {
-    if (preference !== SYSTEM) return preference
+  function getSystemTheme(): 'light' | 'dark' {
     return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  }
+
+  function resolve(preference: string): string {
+    return preference === SYSTEM ? getSystemTheme() : preference
   }
 
   function apply(theme: string): void {
@@ -135,5 +142,13 @@ export function createEclipse(config: EclipseConfig): Eclipse {
     }
   }
 
-  return { setTheme, toggleTheme, getTheme, getPreference, onThemeChange }
+  return {
+    setTheme,
+    toggleTheme,
+    getTheme,
+    getPreference,
+    onThemeChange,
+    getSystemTheme,
+    themes: Object.freeze([...config.themes]),
+  }
 }

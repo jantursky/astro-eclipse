@@ -69,6 +69,8 @@ describe('astro-eclipse/client', () => {
     expectTypeOf(api.getPreference).returns.toBeString()
     expectTypeOf(api.onThemeChange).parameter(0).toEqualTypeOf<(change: ThemeChange) => void>()
     expectTypeOf(api.onThemeChange).returns.toEqualTypeOf<() => void>()
+    expectTypeOf(api.getSystemTheme).returns.toEqualTypeOf<'light' | 'dark'>()
+    expectTypeOf(api.themes).toEqualTypeOf<readonly string[]>()
   })
 
   it('defineTransition takes a name and a definition and returns the definition', () => {

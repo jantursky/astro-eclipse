@@ -40,13 +40,13 @@ try {
     `import { defineConfig } from 'astro/config'
 import eclipse from 'astro-eclipse'
 
-export default defineConfig({ integrations: [eclipse({ themes: ['light', 'dark', 'sepia'], attribute: 'class' })] })
+export default defineConfig({ integrations: [eclipse({ themes: ['light', 'dark', 'sepia'], attribute: 'class', headless: true })] })
 `,
   )
   write(
     'src/pages/index.astro',
     `---
-import { ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
+import { ThemeRadio, ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
 ---
 <html lang="en">
   <head><meta charset="utf-8" /><title>pack test</title></head>
@@ -54,6 +54,8 @@ import { ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
     <button id="toggle">toggle</button>
     <ThemeToggle themes={['light', 'dark']} transition="wipe" />
     <ThemeSelect labels={{ dark: 'Night' }} />
+    <ThemeRadio label="Colors" labels={{ dark: 'Dusk' }} />
+    <ThemeRadio />
     <script>
       import { toggleTheme, getTheme } from 'astro-eclipse/client'
       document.getElementById('toggle')?.addEventListener('click', (event) => toggleTheme({ origin: event }))
@@ -67,6 +69,14 @@ import { ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
 
   const html = readFileSync(join(dir, 'dist/index.html'), 'utf8')
   if (!html.includes('data-eclipse-toggle')) throw new Error('ThemeToggle was not rendered')
+  if (!html.includes('data-eclipse-radio') || !html.includes('>Dusk<') || !html.includes('>Colors<')) {
+    throw new Error('ThemeRadio was not rendered')
+  }
+  // Two groups on one page must not share a radio name, or checking one would uncheck the other.
+  const radioNames = new Set(
+    [...html.matchAll(/type="radio"[^>]*name="([^"]+)"|name="([^"]+)"[^>]*type="radio"/g)].map((m) => m[1] ?? m[2]),
+  )
+  if (radioNames.size !== 2) throw new Error(`Expected 2 radio group names, got ${[...radioNames].join(', ')}`)
   if (!html.includes('data-eclipse-select') || !html.includes('>Night<'))
     throw new Error('ThemeSelect was not rendered')
   if (!html.includes('eclipse-theme')) throw new Error('The inline head script is missing from the built page')
@@ -75,7 +85,10 @@ import { ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
   const assets = existsSync(assetDir) ? readdirSync(assetDir).filter((name) => name.endsWith('.js')) : []
   const bundled = [html, ...assets.map((name) => readFileSync(join(assetDir, name), 'utf8'))].join('\n')
   if (!bundled.includes('eclipse:change')) throw new Error('The client API is missing from the built site')
-  console.log('built a fresh Astro site: head script inlined, client API bundled')
+  // The package declares `sideEffects`, so a bundler drops any side-effect import it is not told about. The page
+  // script that `headless` injects is such an import; it must survive into the build.
+  if (!bundled.includes('[data-eclipse-set]')) throw new Error('The headless module is missing from the built site')
+  console.log('built a fresh Astro site: head script inlined, client API and headless module bundled')
 
   // Invalid `themes` must fail the build with a message that names the problem.
   for (const [themes, message] of [
@@ -83,26 +96,28 @@ import { ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
     ["['light', 'neon']", 'Got: light, neon'],
     ["['light', 'system']", 'without "system"'],
   ]) {
-    write(
-      'src/pages/bad.astro',
-      `---
-import { ThemeSelect } from 'astro-eclipse/components'
+    for (const component of ['ThemeSelect', 'ThemeRadio']) {
+      write(
+        'src/pages/bad.astro',
+        `---
+import { ${component} } from 'astro-eclipse/components'
 ---
-<ThemeSelect themes={${themes}} />
+<${component} themes={${themes}} />
 `,
-    )
-    let output = ''
-    try {
-      run('npx', ['astro', 'build'], dir)
-    } catch (error) {
-      output = `${error.stdout ?? ''}${error.stderr ?? ''}`
-    }
-    if (!output.includes('ThemeSelect `themes`') || !output.includes(message)) {
-      throw new Error(`ThemeSelect with themes=${themes} did not fail the build with "${message}"`)
+      )
+      let output = ''
+      try {
+        run('npx', ['astro', 'build'], dir)
+      } catch (error) {
+        output = `${error.stdout ?? ''}${error.stderr ?? ''}`
+      }
+      if (!output.includes(`${component} \`themes\``) || !output.includes(message)) {
+        throw new Error(`${component} with themes=${themes} did not fail the build with "${message}"`)
+      }
     }
   }
   rmSync(join(dir, 'src/pages/bad.astro'))
-  console.log('ThemeSelect rejects invalid themes at build time')
+  console.log('ThemeSelect and ThemeRadio reject invalid themes at build time')
 } finally {
   rmSync(dir, { recursive: true, force: true })
 }

@@ -1,0 +1,46 @@
+---
+title: Headless controls
+description: Switch themes from plain HTML, markdown or CMS content with a data attribute, with no script of your own.
+---
+
+Sometimes the control is not a component: a link in a markdown file, a button in CMS content, a menu item you render in another framework. With `headless` on, any element with a `data-eclipse-set` attribute switches the theme when it is clicked.
+
+```js astro.config.mjs
+import eclipse from 'astro-eclipse'
+
+export default defineConfig({
+  integrations: [eclipse({ headless: true })],
+})
+```
+
+```html
+<a href="#" data-eclipse-set="dark">Dark</a>
+<button type="button" data-eclipse-set="system">Follow my device</button>
+<button type="button" data-eclipse-set="light" data-transition="wipe" data-direction="down">Light</button>
+```
+
+## Attributes
+
+| Attribute          | Value                                     | Notes                                                   |
+| ------------------ | ----------------------------------------- | ------------------------------------------------------- |
+| `data-eclipse-set` | a theme name, or `system`                 | Required. `system` needs the themes `light` and `dark`. |
+| `data-transition`  | any built-in or `defineTransition()` name | Default: the config's `transition`.                     |
+| `data-duration`    | milliseconds                              | Default: the config's `duration`.                       |
+| `data-direction`   | `up`, `down`, `left` or `right`           | For `wipe` and `blinds`.                                |
+
+The reveal starts at the click, like `ThemeToggle`. A click on a child of the element counts.
+
+## Behavior
+
+- The click is a control, not a navigation: the default action is cancelled, so `<a href="#">` does not jump to the top of the page. Do not put a real destination on the same element.
+- An unknown value changes nothing and logs one error in the console that names the value and lists the known themes. The page does not throw.
+- One listener on `document` serves the whole page, including elements that arrive with a `ClientRouter` navigation. Nothing is rebound.
+- Nothing shows which option is current. The attribute has no state of its own: style it from the theme with CSS, or use [`ThemeSelect`](/guides/theme-select) or [`ThemeRadio`](/guides/theme-radio) where the control must show the choice.
+
+## Cost
+
+With `headless` off, which is the default, nothing is added to your pages. With it on, the integration injects one page script that imports `astro-eclipse/client/headless`: about 270 B gzipped of its own code, on top of the [client API](/reference/client-api) it shares with the components.
+
+## Not checked
+
+Tested in Chromium and WebKit in the demo (a link, a non-link element, `system`, per-element options, an unknown value, after a `ClientRouter` navigation). Firefox runs in CI but has not been run by hand. Keyboard use on a non-button element is up to you: a `<span>` needs `role="button"` and `tabindex="0"`, and the listener reacts to clicks only, so also handle Enter and Space or use a real `<button>`.

@@ -59,6 +59,34 @@ describe('createEclipse', () => {
     })
   })
 
+  describe('getSystemTheme and themes', () => {
+    it('reports the OS scheme whatever the visitor chose', () => {
+      media.setDark(true)
+      localStorage.setItem('eclipse-theme', 'light')
+      const eclipse = setup()
+      expect(eclipse.getSystemTheme()).toBe('dark')
+      expect(eclipse.getTheme()).toBe('light')
+      media.setDark(false)
+      expect(eclipse.getSystemTheme()).toBe('light')
+    })
+
+    it('is light where matchMedia is missing', () => {
+      vi.stubGlobal('matchMedia', undefined)
+      expect(setup().getSystemTheme()).toBe('light')
+    })
+
+    it('lists the configured themes in order, without system', () => {
+      const eclipse = setup({ themes: ['light', 'dark', 'sepia'] })
+      expect(eclipse.themes).toEqual(['light', 'dark', 'sepia'])
+      expect(eclipse.themes).not.toContain('system')
+    })
+
+    it('hands out a list that cannot be changed', () => {
+      const eclipse = setup()
+      expect(Object.isFrozen(eclipse.themes)).toBe(true)
+    })
+  })
+
   describe('setTheme', () => {
     it('applies, persists and reports the theme', () => {
       const eclipse = setup()

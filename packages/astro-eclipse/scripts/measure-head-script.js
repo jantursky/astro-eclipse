@@ -1,6 +1,6 @@
 // Writes the inline head script for the default config, and for a config with every option on, to .size/,
-// where size-limit measures them.
-import { mkdirSync, writeFileSync } from 'node:fs'
+// where size-limit measures them. Also writes the headless module there, with its client import left external.
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { resolveConfig } from '../dist/config.js'
@@ -17,5 +17,15 @@ writeFileSync(
       colorScheme: { light: 'light', dark: 'dark', sepia: 'light', forest: 'dark' },
       themeColor: { light: '#ffffff', dark: '#111111', sepia: '#f4ecd8', forest: '#10241a' },
     }),
+  ),
+)
+
+// The headless module imports the client API, which is measured on its own. Point the import at the package name,
+// so the budget covers only the module's own code (size-limit ignores that package).
+writeFileSync(
+  join(dir, 'headless.js'),
+  readFileSync(join(import.meta.dirname, '..', 'dist/client/headless.js'), 'utf8').replace(
+    /from\s*['"]\.\/index\.js['"]/,
+    "from 'astro-eclipse/client'",
   ),
 )

@@ -1,5 +1,5 @@
 ---
-import { ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
+import { ThemeRadio, ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
 import Base from '../layouts/Base.astro'
 ---
 
@@ -49,6 +49,73 @@ import Base from '../layouts/Base.astro'
       />
       <h2>Two themes, no System</h2>
       <ThemeSelect data-testid="select-plain" themes={['light', 'dark']} system={false} />
+    </div>
+  </section>
+  <section class="wrap head">
+    <div class="stack">
+      <span class="label">Component</span>
+      <h2 class="title">ThemeRadio</h2>
+      <p class="lede">
+        A radio group that shows every choice at once. It follows your preference, so System stays checked while the
+        page is dark, and arrow keys move between the options.
+      </p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <div class="card stack">
+      <h2>Default: every theme plus System</h2>
+      <ThemeRadio data-testid="radio-default" />
+      <h2>Custom labels and name, wipe</h2>
+      <ThemeRadio
+        data-testid="radio-labels"
+        label="Farbschema"
+        labels={{ light: 'Hell', dark: 'Dunkel', system: 'Automatisch' }}
+        transition="wipe"
+        direction="down"
+      />
+      <h2>Two themes, no System</h2>
+      <ThemeRadio data-testid="radio-plain" themes={['light', 'dark']} system={false} />
+    </div>
+  </section>
+  <section class="wrap head">
+    <div class="stack">
+      <span class="label">Headless</span>
+      <h2 class="title">data-eclipse-set</h2>
+      <p class="lede">
+        Any element with <code>data-eclipse-set</code> switches the theme on click, with no script of your own. This is
+        what markdown or CMS content can use.
+      </p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <div class="card stack">
+      <p data-testid="headless">
+        Switch to{' '}
+        <a href="#" data-eclipse-set="dark">
+          dark
+        </a>
+        ,{' '}
+        <a href="#" data-eclipse-set="sepia">
+          sepia
+        </a>{' '}
+        or
+        <a href="#" data-eclipse-set="system">
+          the system theme
+        </a>
+        .
+      </p>
+      <p>
+        <button
+          class="btn btn-ghost"
+          type="button"
+          data-testid="headless-wipe"
+          data-eclipse-set="light"
+          data-transition="wipe"
+          data-direction="down"
+        >
+          Light, wipe down
+        </button>
+      </p>
     </div>
   </section>
 </Base>

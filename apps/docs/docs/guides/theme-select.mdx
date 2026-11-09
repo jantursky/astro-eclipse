@@ -30,6 +30,8 @@ import { ThemeSelect } from 'astro-eclipse/components'
 
 Any other attribute (`id`, `aria-*`, `data-*`) is passed to the `<select>`. `themes` must be a non-empty subset of the configured themes and cannot contain `system`; a wrong value fails the build with a message that lists the configured themes.
 
+Want every option visible at once? Use [`ThemeRadio`](/guides/theme-radio).
+
 ## Accessible name
 
 The select has no visible label of its own, so `aria-label` carries the name (`Theme` by default). Translate it with the `label` prop. For a visible label, point `aria-labelledby` at it (`<ThemeSelect aria-labelledby="theme-label" />`): it wins over `aria-label`, whereas a plain `<label for>` does not.
