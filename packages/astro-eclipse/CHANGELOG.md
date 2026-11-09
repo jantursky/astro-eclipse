@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-11-09
+
+### Added
+
+- `ThemeRadio` in `astro-eclipse/components`: a native radio group (`<fieldset>` and `<legend>`) for the themes and `System`. It shows the visitor's preference, stays in sync with other controls, tabs and system mode, starts the reveal at the chosen radio, and takes the same props as `ThemeSelect`.
+- `headless` option: any element with `data-eclipse-set="<theme>"` switches the theme on click, with optional `data-transition`, `data-duration` and `data-direction`. It adds one page script (about 270 B gzipped) only when turned on.
+- `getSystemTheme()` and `themes` in `astro-eclipse/client`: the scheme the device prefers right now, and the configured theme names.
+
+### Changed
+
+- `package.json` lists `dist/client/headless.js` under `sideEffects` (it was `false`), so bundlers keep the headless page script.
+
 ## [1.3.0] - 2026-11-09
 
 ### Added
