@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-11-09
+
+### Added
+
+- `ThemeSelect` in `astro-eclipse/components`: a native `<select>` that lists the themes and a `System` option, shows the visitor's preference, stays in sync with other controls, tabs and system mode, and starts the reveal at the select. Props: `themes`, `system`, `labels`, `label`, `transition`, `duration`, `direction`, `class`.
+
 ## [1.1.0] - 2026-11-06
 
 ### Added
