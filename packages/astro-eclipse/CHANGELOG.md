@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-11-09
+
+### Added
+
+- Docs: a shadcn/ui guide, a `transition:persist` toggle recipe, a multi-page (no `ClientRouter`) guide, and a migration guide for astro-color-scheme, astro-theme-toggle and hand-written scripts.
+- Docs: the Tailwind 4 snippets now state the versions they were built with.
+
+### Changed
+
+- Tests only, no change to the package code: branch coverage is 100% and enforced, and the public types have type tests.
+
 ## [1.2.0] - 2026-11-09
 
 ### Added

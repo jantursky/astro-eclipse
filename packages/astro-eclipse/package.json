@@ -1,6 +1,6 @@
 {
   "name": "astro-eclipse",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Astro integration for theme switching with animated View Transitions: circle reveal, wipe, blinds and more. No flash, survives ClientRouter navigation.",
   "license": "MIT",
   "author": {
