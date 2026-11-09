@@ -1,0 +1,50 @@
+---
+title: shadcn/ui
+description: Use shadcn/ui components and their dark variables with Astro Eclipse, with the class attribute.
+---
+
+shadcn/ui styles dark mode with a `.dark` class on `<html>`, a `@custom-variant dark` rule and CSS variables defined under `:root` and `.dark`. Astro Eclipse can toggle that class, so the two meet in the middle with one config line.
+
+## Setup
+
+Set the attribute to `class` and keep `light` and `dark` as the themes:
+
+```js astro.config.mjs
+import { defineConfig } from 'astro/config'
+import react from '@astrojs/react'
+import tailwindcss from '@tailwindcss/vite'
+import eclipse from 'astro-eclipse'
+
+export default defineConfig({
+  integrations: [react(), eclipse({ themes: ['light', 'dark'], attribute: 'class' })],
+  vite: { plugins: [tailwindcss()] },
+})
+```
+
+Run shadcn's own `init` as its Astro guide describes. It adds the variables to your CSS file. The variant must point at the `dark` class; if your file has a different `@custom-variant dark`, replace it with this line (the one used in the run described below):
+
+```css src/styles/global.css
+@custom-variant dark (&:is(.dark *));
+```
+
+With `themes: ['light', 'dark']` the element ends up with the class `light` or `dark`, so shadcn's `.dark { ... }` block applies in dark and `:root` applies otherwise. The `light` class has no rules of its own in shadcn and does no harm.
+
+Then add the toggle anywhere in your layout. It does not need React:
+
+```astro
+---
+import { ThemeToggle } from 'astro-eclipse/components'
+---
+
+<ThemeToggle transition="wipe" />
+```
+
+## What was checked
+
+The setup was run in a scratch project with Astro 7.4.8, `@astrojs/react` 7.1.5, Tailwind 4.3.5, shadcn 4.23.0 (the `base-nova` style, with its `Button`) and astro-eclipse 1.2.0. In Chromium, with the stored theme `light`, `<html>` had the class `light` and the body background was `oklch(1 0 0)`. With `dark` it had the class `dark` and the background was `oklch(0.145 0 0)`, shadcn's dark `--background`. The toggle itself, other shadcn components, and Firefox and WebKit were not run.
+
+## Three or more themes
+
+shadcn defines two palettes. To add a third theme, add a class for it (`themes: ['light', 'dark', 'sepia']`) and your own block of variables under `.sepia { ... }`. Note that `dark:` utilities then apply only in `dark`; give `sepia` its own variables instead of relying on a variant.
+
+Related: [Tailwind](/guides/tailwind), [CSS variables](/guides/css-variables), [framework islands](/guides/framework-islands).

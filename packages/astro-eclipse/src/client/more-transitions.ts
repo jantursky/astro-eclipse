@@ -81,6 +81,8 @@ function ripplePath({ origin, width, height }: TransitionContext, progress: numb
   const band = outer * 0.15
   const gap = band * 0.9 * (1 - progress)
   const radii: number[] = [outer]
+  // `radii` always holds `outer`, so `.at(-1)` is never undefined: the fallback only satisfies the types.
+  /* v8 ignore next -- @preserve */
   for (const step of [band, gap, band, gap]) radii.push(Math.max(0, (radii.at(-1) ?? 0) - step))
   return `path(evenodd, '${radii.map((radius) => circle(origin, radius)).join('')}')`
 }

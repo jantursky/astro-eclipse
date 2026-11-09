@@ -1,0 +1,24 @@
+---
+title: Multi-page sites
+description: What Astro Eclipse guarantees when your site does not use ClientRouter, including cross-document view transitions.
+---
+
+Without `ClientRouter`, every link is a full page load. Nothing is swapped, so there is nothing for Astro Eclipse to re-apply. The [head script](/reference/head-script) does the whole job: it runs in `<head>` of each page and sets the stored theme before the page paints.
+
+## What is guaranteed
+
+- Each full page load shows the stored theme from the first paint. The attribute is on `<html>` before `<body>` exists, so the page does not flash the default.
+- A theme picked on one page is on the next. The choice is in `localStorage`, which every page of the site reads.
+- Components and the client API work as on any page: they read the same storage.
+
+## Cross-document view transitions
+
+Browsers that support `@view-transition { navigation: auto }` animate navigation between pages without `ClientRouter`. That animation belongs to the browser. Astro Eclipse does not change it, and the theme is still on `<html>` before the new page paints.
+
+## What is not handled
+
+Calling `setTheme` while such a navigation is in progress is not special-cased. [With `ClientRouter`](/guides/clientrouter#theme-changes-during-a-navigation) the library skips its own transition during a page transition; with cross-document transitions it has no way to know one is running.
+
+## What was tested
+
+The demo has four pages without `ClientRouter` (`/mpa/a` to `/mpa/d`; `c` and `d` opt in to cross-document view transitions). Playwright checks that the stored theme is on the next page before it paints, with no other value on the attribute along the way, and that a theme picked on one page is on the next. That ran in Chromium and WebKit. The cross-document case with motion allowed ran in Chromium only, because that is where the feature runs. Firefox runs in CI but has not been run by hand.

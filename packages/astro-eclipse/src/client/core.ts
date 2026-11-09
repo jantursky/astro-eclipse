@@ -119,6 +119,8 @@ export function createEclipse(config: EclipseConfig): Eclipse {
 
   function toggleTheme(options?: SetThemeOptions): void {
     const index = config.themes.indexOf(getTheme())
+    // The config requires at least one theme, so the index always lands on one: the fallback only satisfies the types.
+    /* v8 ignore next -- @preserve */
     setTheme(config.themes[(index + 1) % config.themes.length] ?? config.default, options)
   }
 

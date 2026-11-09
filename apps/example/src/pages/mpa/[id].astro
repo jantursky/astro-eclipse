@@ -1,0 +1,25 @@
+---
+import Plain from '../../layouts/Plain.astro'
+
+export function getStaticPaths() {
+  return ['a', 'b', 'c', 'd'].map((id) => ({ params: { id } }))
+}
+
+const { id } = Astro.params
+// c and d opt in to cross-document view transitions; a and b are plain pages.
+const crossDocument = id === 'c' || id === 'd'
+const other = { a: 'b', b: 'a', c: 'd', d: 'c' }[id as 'a' | 'b' | 'c' | 'd']
+---
+
+<Plain title={`Multi-page ${id}: Astro Eclipse`} crossDocument={crossDocument}>
+  <h1 data-testid="page-id">Page {id}</h1>
+  <p>
+    This page has no ClientRouter.{' '}
+    {crossDocument ? 'It opts in to cross-document view transitions.' : 'It is a plain page.'}
+  </p>
+  <p>
+    <a href={`/mpa/${other}`} data-testid="other">
+      Go to page {other}
+    </a>
+  </p>
+</Plain>

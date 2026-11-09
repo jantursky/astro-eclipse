@@ -6,6 +6,7 @@ export default defineMeta({
   pages: [
     'css-variables',
     'tailwind',
+    'shadcn',
     'theme-toggle',
     'theme-select',
     'browser-chrome',
@@ -13,7 +14,9 @@ export default defineMeta({
     'custom-transition',
     'framework-islands',
     'clientrouter',
+    'multi-page',
     'accessibility',
     'browser-support',
+    'migrating',
   ],
 })

@@ -154,6 +154,18 @@ describe('runTransition', () => {
     expect(started[1]!.skipTransition).not.toHaveBeenCalled()
   })
 
+  it('keeps the newer transition active when an older one finishes late', async () => {
+    runTransition(() => {}, request)
+    runTransition(() => {}, request)
+    started[0]!.finish()
+    await started[0]!.finished
+    await Promise.resolve()
+    await Promise.resolve()
+    // The first one finishing must not forget the second: a third call still skips the second.
+    runTransition(() => {}, request)
+    expect(started[1]!.skipTransition).toHaveBeenCalledOnce()
+  })
+
   it('ignores a transition that is skipped before it is ready', async () => {
     skipNext = true
     runTransition(() => {}, request)
@@ -422,6 +434,16 @@ describe('path effects', () => {
     expect(first! > last!).toBe(leftFirst)
   })
 
+  it.each([
+    ['down', true],
+    ['up', false],
+  ] as const)('stairs travelling %s grow the rows from the %s edge', (direction, topFirst) => {
+    const frame = paths('stairs', { ...context, direction })[4]!
+    const widths = [...frame.matchAll(/M0 [\d.-]+h([\d.]+)v/g)].map((m) => Number(m[1]))
+    expect(widths).toHaveLength(10)
+    expect(widths[0]! > widths.at(-1)!).toBe(topFirst)
+  })
+
   it('mosaic samples one square per cell in every frame and opens each one fully', () => {
     const frames = paths('mosaic')
     expect(frames).toHaveLength(11)
@@ -460,6 +482,16 @@ describe('motion effects', () => {
       { transform: 'rotate(-150deg) scale(0)', opacity: 0 },
       { transform: 'rotate(0deg) scale(1)', opacity: 1 },
     ])
+  })
+
+  it.each([
+    ['left', 'translateX(100%)', 'translateX(-100%)'],
+    ['down', 'translateY(-100%)', 'translateY(100%)'],
+    ['up', 'translateY(100%)', 'translateY(-100%)'],
+  ] as const)('cover and reveal travelling %s slide along the right axis', (direction, coverFrom, revealTo) => {
+    const ctx = { ...context, direction }
+    expect(define('cover').new!(ctx)[0]).toEqual({ transform: coverFrom })
+    expect(define('reveal').old!(ctx)[1]).toEqual({ transform: revealTo })
   })
 
   it('cover moves only the new theme and reveal moves only the old one', () => {

@@ -44,6 +44,21 @@ describe('createEclipse', () => {
     })
   })
 
+  describe('without a document (server render)', () => {
+    it('reads the default and ignores writes and subscriptions', () => {
+      vi.stubGlobal('document', undefined)
+      const eclipse = setup({ default: 'dark' })
+      expect(eclipse.getPreference()).toBe('dark')
+      expect(() => {
+        eclipse.setTheme('light')
+      }).not.toThrow()
+      const stop = eclipse.onThemeChange(() => undefined)
+      expect(() => {
+        stop()
+      }).not.toThrow()
+    })
+  })
+
   describe('setTheme', () => {
     it('applies, persists and reports the theme', () => {
       const eclipse = setup()

@@ -59,7 +59,7 @@ The attribute setup keeps your CSS variables and Tailwind on the same selector, 
 The names in the variant must match your `themes`. If you rename `dark` to `night`, the selector becomes `.night` or `[data-theme='night']`.
 
 :::note
-Tailwind 4 with the variant above is what these snippets are written for. They have not been run against a Tailwind build in this repository. For Tailwind 3 see its own `darkMode` documentation.
+Both setups were built in a scratch project with Astro 7.4.8, Tailwind 4.3.5 and `@tailwindcss/vite`, on astro-eclipse 1.2.0. The generated CSS contained `.dark\:bg-black:where(.dark, .dark *)` for the class setup and the `[data-theme=dark]` selectors for the attribute setup, and the page carried the inline head script. The result was not opened in a browser. For Tailwind 3 see its own `darkMode` documentation.
 :::
 
 Related: [CSS variables](/guides/css-variables), [config reference](/reference/config).

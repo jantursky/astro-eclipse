@@ -59,4 +59,33 @@ Bundled `<script>` tags in Astro run once, so the listener is not added twice.
 
 An island kept across navigation with `transition:persist` keeps its state, and so does its `onThemeChange` subscription. The [hooks](/guides/framework-islands) clean up only when the component is destroyed.
 
+### Keep the toggle with `transition:persist`
+
+If the toggle lives in a layout that every page shares, you can keep the same DOM node across navigations instead of letting it be replaced:
+
+```astro src/layouts/Layout.astro
+---
+import { ClientRouter } from 'astro:transitions'
+import { ThemeToggle } from 'astro-eclipse/components'
+---
+
+<html lang="en">
+  <head>
+    <ClientRouter />
+  </head>
+  <body>
+    <header>
+      <ThemeToggle transition:persist />
+    </header>
+    <slot />
+  </body>
+</html>
+```
+
+The label stays correct because `ThemeToggle` refreshes it on theme changes and on `astro:page-load`, and its single click listener lives on `document`, so nothing needs rebinding. A persisted toggle also means the focus ring and any open state in a custom toggle survive the navigation. Use the same attribute on a custom toggle if you prefer; its label must then be updated from `onThemeChange`.
+
+This was run in a scratch project with Astro 7.4.8 and astro-eclipse 1.2.0, in Chromium with reduced motion. The same `<button>` node was still there on the second page (a marker set on it survived), its name read `Theme: dark. Switch to light` straight after the navigation, and clicking it there switched the theme. Other browsers and motion were not run.
+
+Without `ClientRouter`, see [multi-page sites](/guides/multi-page).
+
 Related: [accessibility](/guides/accessibility), [transitions](/guides/transitions#when-it-switches-instantly).

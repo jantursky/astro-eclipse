@@ -1,0 +1,71 @@
+---
+title: Migrating
+description: Move from astro-color-scheme, astro-theme-toggle or a hand-written script without losing your visitors' saved theme.
+---
+
+Visitors keep their saved theme if you point `storageKey` at the key your old tool used and the stored values are themes you still define. Everything below was read from the source of the version named in each heading, not from memory.
+
+## From astro-color-scheme (1.1.6)
+
+It stores `light`, `dark` or `system` under the key `theme`, and sets both the classes `light`/`dark` and `data-theme` on `<html>`.
+
+| astro-color-scheme                           | Astro Eclipse                                                                                                         |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| key `theme`                                  | `storageKey: 'theme'`                                                                                                 |
+| values `light`, `dark`, `system`             | themes `light` and `dark` (the default), and `default: 'system'`                                                      |
+| `<ThemeSwitch defaultTheme="dark">`          | `default: 'dark'` in the config                                                                                       |
+| `<ThemeSwitch strategy="button">`            | [`ThemeToggle`](/guides/theme-toggle)                                                                                 |
+| `<ThemeSwitch strategy="select">`            | [`ThemeSelect`](/guides/theme-select)                                                                                 |
+| `strategy="radio"` and `strategy="checkbox"` | No built-in component. Call [`setTheme`](/reference/client-api) from your own markup.                                 |
+| `.dark` and `[data-theme='dark']` together   | Eclipse sets one of them: the class with `attribute: 'class'`, or `data-theme` by default. Keep the selector you use. |
+
+```js astro.config.mjs
+import eclipse from 'astro-eclipse'
+
+export default defineConfig({
+  integrations: [eclipse({ storageKey: 'theme', attribute: 'class', default: 'system' })],
+})
+```
+
+Replace each `<ThemeSwitch>` with an Eclipse component or a `setTheme` call and remove the package. astro-color-scheme also adds `.dark { color-scheme: dark }` globally; the `colorScheme` option does the same per theme ([browser chrome](/guides/browser-chrome)).
+
+## From astro-theme-toggle (0.8.2)
+
+It stores `light` or `dark` under the key `theme-toggle`, removes the key when the choice equals the system theme, and sets the class `dark`, `data-theme` and an inline `color-scheme` on `<html>`.
+
+| astro-theme-toggle                          | Astro Eclipse                                                                |
+| ------------------------------------------- | ---------------------------------------------------------------------------- |
+| key `theme-toggle`                          | `storageKey: 'theme-toggle'`                                                 |
+| `<ThemeScript />` in `<head>`               | Nothing to add: the integration injects the head script.                     |
+| `<Toggle />`                                | [`ThemeToggle`](/guides/theme-toggle)                                        |
+| `icon-light` and `icon-dark` slots          | The default slot of `ThemeToggle` replaces the icon.                         |
+| `window.astroThemeToggle.setTheme/getTheme` | `setTheme` and `getTheme` from `astro-eclipse/client`.                       |
+| `style.colorScheme` on `<html>`             | `colorScheme: { light: 'light', dark: 'dark' }`                              |
+| class `dark` only                           | With `attribute: 'class'` the element gets `light` or `dark`, never neither. |
+
+```js astro.config.mjs
+export default defineConfig({
+  integrations: [
+    eclipse({
+      storageKey: 'theme-toggle',
+      attribute: 'class',
+      colorScheme: { light: 'light', dark: 'dark' },
+    }),
+  ],
+})
+```
+
+A visitor who never picked anything has no stored key in either tool, and gets `default: 'system'`, which follows the device.
+
+## From a hand-written script
+
+1. Find the `localStorage` key and the values it holds.
+2. Set `storageKey` to that key. Every value must be one of your `themes` or `system`; a stored value that is not is ignored and `default` is used.
+3. Choose `attribute`: `'class'` if your CSS uses `.dark`, otherwise the default `data-theme`.
+4. Delete your script. Eclipse's head script runs before first paint and on `ClientRouter` swaps, so a copy of yours would only race it.
+
+## Check it
+
+After the change, open the site in a browser that already has a saved theme from the old tool and confirm the page paints with it. If it does not, compare the key in DevTools (Application, Local Storage) with `storageKey`.
+
+The key and value shapes above are pinned by unit tests in the repository (`test/migration.test.ts`), which store each tool's value and check that the head script and the client API read it. Nothing was run against a live install of the old packages.

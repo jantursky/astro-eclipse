@@ -1,0 +1,31 @@
+---
+// A layout without ClientRouter: every link is a full page load. Used to check that the head script alone
+// keeps the theme across plain navigation, with and without cross-document view transitions.
+import { ThemeToggle } from 'astro-eclipse/components'
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  crossDocument?: boolean
+}
+
+const { title, crossDocument = false } = Astro.props
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {crossDocument && <style is:inline set:html="@view-transition { navigation: auto; }" />}
+  </head>
+  <body>
+    <main class="wrap" style="padding-block: 48px">
+      <slot />
+      <p>
+        <ThemeToggle data-testid="plain-toggle" />
+      </p>
+    </main>
+  </body>
+</html>
