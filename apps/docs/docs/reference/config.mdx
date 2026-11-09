@@ -35,22 +35,26 @@ interface EclipseOptions {
   colorScheme?: Record<string, 'light' | 'dark'>
   themeColor?: Record<string, string>
   headless?: boolean
+  forcedTheme?: boolean
+  disableCssTransitions?: boolean
 }
 ```
 
 ## Options
 
-| Option        | Type                                | Default             | Description                                                                                                                   |
-| ------------- | ----------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `themes`      | `string[]`                          | `['light', 'dark']` | Theme names. Each is a value of `attribute`, or a class. `toggleTheme()` cycles them in this order.                           |
-| `default`     | `string`                            | `'system'`          | The theme used before the visitor chooses. `'system'` follows `prefers-color-scheme` and needs the themes `light` and `dark`. |
-| `attribute`   | `'class'` or `` `data-${string}` `` | `'data-theme'`      | `'class'` toggles a class per theme on `<html>`. A `data-*` name sets that attribute.                                         |
-| `storageKey`  | `string`                            | `'eclipse-theme'`   | The `localStorage` key that holds the visitor's choice.                                                                       |
-| `transition`  | `string`                            | `'circle'`          | The effect used when a call does not name one.                                                                                |
-| `duration`    | `number`                            | `500`               | Effect length in milliseconds. `0` turns the animation off.                                                                   |
-| `colorScheme` | `Record<string, 'light' \| 'dark'>` | not set             | Sets `color-scheme` on `<html>` per theme. See [browser chrome](/guides/browser-chrome).                                      |
-| `themeColor`  | `Record<string, string>`            | not set             | Sets `<meta name="theme-color">` per theme. See [browser chrome](/guides/browser-chrome).                                     |
-| `headless`    | `boolean`                           | `false`             | Lets any element with `data-eclipse-set` switch the theme on click. See [headless controls](/guides/headless).                |
+| Option                  | Type                                | Default             | Description                                                                                                                   |
+| ----------------------- | ----------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `themes`                | `string[]`                          | `['light', 'dark']` | Theme names. Each is a value of `attribute`, or a class. `toggleTheme()` cycles them in this order.                           |
+| `default`               | `string`                            | `'system'`          | The theme used before the visitor chooses. `'system'` follows `prefers-color-scheme` and needs the themes `light` and `dark`. |
+| `attribute`             | `'class'` or `` `data-${string}` `` | `'data-theme'`      | `'class'` toggles a class per theme on `<html>`. A `data-*` name sets that attribute.                                         |
+| `storageKey`            | `string`                            | `'eclipse-theme'`   | The `localStorage` key that holds the visitor's choice.                                                                       |
+| `transition`            | `string`                            | `'circle'`          | The effect used when a call does not name one.                                                                                |
+| `duration`              | `number`                            | `500`               | Effect length in milliseconds. `0` turns the animation off.                                                                   |
+| `colorScheme`           | `Record<string, 'light' \| 'dark'>` | not set             | Sets `color-scheme` on `<html>` per theme. See [browser chrome](/guides/browser-chrome).                                      |
+| `themeColor`            | `Record<string, string>`            | not set             | Sets `<meta name="theme-color">` per theme. See [browser chrome](/guides/browser-chrome).                                     |
+| `headless`              | `boolean`                           | `false`             | Lets any element with `data-eclipse-set` switch the theme on click. See [headless controls](/guides/headless).                |
+| `forcedTheme`           | `boolean`                           | `false`             | Lets a page pin one theme with `<html data-eclipse-forced>`. See [forced theme](/guides/forced-theme).                        |
+| `disableCssTransitions` | `boolean`                           | `false`             | Suppresses CSS transitions for the frame of a client API theme change. See [forced theme](/guides/forced-theme).              |
 
 The value is also checked when the config loads, so a plain JavaScript config gets the same error.
 
@@ -80,6 +84,8 @@ An invalid config throws while Astro loads the config, before the build or dev s
 | `storageKey: ''`                               | ``astro-eclipse: `storageKey` cannot be empty.``                                                      |
 | `duration` negative, `NaN` or infinite         | ``astro-eclipse: `duration` must be a number of milliseconds, 0 or more.``                            |
 | `headless` not `true` or `false`               | ``astro-eclipse: `headless` must be true or false.``                                                  |
+| `forcedTheme` not `true` or `false`            | ``astro-eclipse: `forcedTheme` must be true or false.``                                               |
+| `disableCssTransitions` not `true` or `false`  | ``astro-eclipse: `disableCssTransitions` must be true or false.``                                     |
 
 A set of themes without `light` and `dark` must set `default` to one of them, because the default is `system` otherwise:
 

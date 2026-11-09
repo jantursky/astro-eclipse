@@ -7,6 +7,8 @@ export interface TransitionRequest {
   easing: string
   origin: Origin | undefined
   direction: Direction
+  /** Suppress the page's own CSS transitions and animations for the frame of the change. */
+  guardCss?: boolean
 }
 
 /**
@@ -57,10 +59,34 @@ function injectStyle(top: 'old' | 'new'): HTMLStyleElement {
 }
 
 /**
+ * Elements with their own `transition` would animate at their own pace under the new theme. Switch those off while
+ * `update` runs and until the frame after it has been drawn. The view-transition pseudo-elements are not matched
+ * by `*`, so the reveal still plays.
+ */
+function guardCss(update: () => void): () => void {
+  const style = document.createElement('style')
+  style.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}'
+  document.head.append(style)
+  return () => {
+    try {
+      update()
+    } finally {
+      // Two frames, so style recalculation has settled before transitions come back.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          style.remove()
+        })
+      })
+    }
+  }
+}
+
+/**
  * Run `update` (a synchronous DOM change) inside a View Transition when the browser, the visitor and the
  * page allow it, and plainly otherwise. Never throws because an effect could not run.
  */
-export function runTransition(update: () => void, request: TransitionRequest): void {
+export function runTransition(change: () => void, request: TransitionRequest): void {
+  const update = request.guardCss === true ? guardCss(change) : change
   const definition = getTransition(request.name)
   const canAnimate =
     typeof document.startViewTransition === 'function' &&

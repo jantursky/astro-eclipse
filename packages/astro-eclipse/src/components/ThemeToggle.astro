@@ -53,7 +53,7 @@ if (unknown.length > 0 || themes.length === 0) {
 </button>
 
 <script>
-  import { getTheme, onThemeChange, setTheme, type SetThemeOptions } from 'astro-eclipse/client'
+  import { getForced, getTheme, onThemeChange, setTheme, type SetThemeOptions } from 'astro-eclipse/client'
 
   const SELECTOR = '[data-eclipse-toggle]'
   const cycleOf = (button: HTMLElement): string[] => (button.dataset.themes ?? '').split(' ').filter(Boolean)
@@ -68,7 +68,11 @@ if (unknown.length > 0 || themes.length === 0) {
    * A button with visible text of its own keeps that text as its name, so the visible and accessible names match.
    */
   function label(): void {
+    const forced = getForced() !== undefined
     for (const button of document.querySelectorAll<HTMLElement>(SELECTOR)) {
+      // Stays focusable, so its name can still be read.
+      if (forced) button.setAttribute('aria-disabled', 'true')
+      else button.removeAttribute('aria-disabled')
       if (button.textContent.trim() !== '') {
         button.removeAttribute('aria-label')
         continue
@@ -97,7 +101,7 @@ if (unknown.length > 0 || themes.length === 0) {
     Object.defineProperty(window, flag, { value: true })
     document.addEventListener('click', (event) => {
       const button = event.target instanceof Element ? event.target.closest<HTMLElement>(SELECTOR) : null
-      const next = button && nextTheme(button)
+      const next = button && getForced() === undefined ? nextTheme(button) : undefined
       if (button && next) setTheme(next, options(button, event))
     })
     onThemeChange(label)
@@ -122,6 +126,10 @@ if (unknown.length > 0 || themes.length === 0) {
   :where(.eclipse-toggle):focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
+  }
+  :where(.eclipse-toggle)[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   @media (forced-colors: active) {
     :where(.eclipse-toggle) {

@@ -1,0 +1,44 @@
+---
+title: Forced theme
+description: Pin a page to one theme without changing the visitor's saved choice, and stop CSS transitions from lagging behind a theme change.
+---
+
+Some pages must look one way whatever the visitor chose: a dark-only landing page, a print view, a brand page. With `forcedTheme` on, a page sets `data-eclipse-forced` on `<html>` and that theme wins.
+
+```js astro.config.mjs
+import eclipse from 'astro-eclipse'
+
+export default defineConfig({
+  integrations: [eclipse({ forcedTheme: true })],
+})
+```
+
+```astro src/layouts/Dark.astro
+<html lang="en" data-eclipse-forced="dark">
+```
+
+## What happens on a forced page
+
+- The forced theme is painted on first paint, on [ClientRouter](/guides/clientrouter) navigation to the page, and after any `setTheme` call.
+- The stored choice is never changed by forcing. Leaving for a page without the attribute restores it.
+- An attribute value that is not one of your `themes` is ignored.
+- `getTheme()` returns the forced theme. `getPreference()` still returns the stored choice.
+- `setTheme()` stores the choice but does not apply it and runs no transition, so shared controls keep working on every page. The choice shows on the next unforced page.
+- `onThemeChange` details gain `forced`: the forced theme, or `undefined`.
+- `ThemeToggle`, `ThemeSelect` and `ThemeRadio` are disabled (`aria-disabled="true"` on the toggle, which stays focusable so its name can be read; `disabled` on the select and the radio group). Custom and [headless](/guides/headless) controls are your own to disable: check `change.forced`.
+
+`system` cannot be forced.
+
+## Cost
+
+With `forcedTheme` off, which is the default, the head script is unchanged. With it on, it gains about 45 B gzipped.
+
+## Stop CSS transitions from lagging
+
+Elements with their own `transition` animate at their own speed under the new theme, out of step with the reveal. With `disableCssTransitions` on, a theme change made through the client API suppresses CSS transitions and animations from the moment the new theme is applied until two frames after it, then removes the style it added. The reveal itself still plays.
+
+```js
+eclipse({ disableCssTransitions: true })
+```
+
+It applies to `setTheme`, `toggleTheme` and the built-in controls. Changes made by the head script (system theme changes, other tabs) are not covered, to keep the script small. A deliberate entrance animation that happens to run in the same frames is suppressed too.

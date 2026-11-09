@@ -265,4 +265,55 @@ describe('createEclipse', () => {
       }
     })
   })
+
+  describe('forced theme', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals()
+      document.documentElement.removeAttribute('data-eclipse-forced')
+    })
+
+    it('getTheme returns the forced theme and getPreference the stored one', () => {
+      localStorage.setItem('eclipse-theme', 'light')
+      document.documentElement.setAttribute('data-eclipse-forced', 'dark')
+      const eclipse = setup({ forcedTheme: true })
+      expect(eclipse.getTheme()).toBe('dark')
+      expect(eclipse.getPreference()).toBe('light')
+      expect(eclipse.getForced()).toBe('dark')
+    })
+
+    it('ignores the attribute when the option is off or the value is unknown', () => {
+      localStorage.setItem('eclipse-theme', 'light')
+      document.documentElement.setAttribute('data-eclipse-forced', 'dark')
+      expect(setup().getTheme()).toBe('light')
+      document.documentElement.setAttribute('data-eclipse-forced', 'purple')
+      expect(setup({ forcedTheme: true }).getTheme()).toBe('light')
+      expect(setup({ forcedTheme: true }).getForced()).toBeUndefined()
+    })
+
+    it('setTheme stores the choice but does not apply it, and reports forced', () => {
+      document.documentElement.setAttribute('data-eclipse-forced', 'dark')
+      document.documentElement.dataset.theme = 'dark'
+      const eclipse = setup({ forcedTheme: true })
+      const seen: ThemeChange[] = []
+      eclipse.onThemeChange((change) => seen.push(change))
+      eclipse.setTheme('light')
+      expect(theme()).toBe('dark')
+      expect(localStorage.getItem('eclipse-theme')).toBe('light')
+      expect(eclipse.getPreference()).toBe('light')
+      expect(seen).toEqual([{ theme: 'dark', preference: 'light', forced: 'dark' }])
+    })
+
+    it('reports forced as undefined on an unforced page', () => {
+      const eclipse = setup({ forcedTheme: true })
+      const seen: ThemeChange[] = []
+      eclipse.onThemeChange((change) => seen.push(change))
+      eclipse.setTheme('dark')
+      expect(seen).toEqual([{ theme: 'dark', preference: 'dark', forced: undefined }])
+    })
+
+    it('has no forced theme without a document', () => {
+      vi.stubGlobal('document', undefined)
+      expect(setup({ forcedTheme: true }).getForced()).toBeUndefined()
+    })
+  })
 })

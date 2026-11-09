@@ -11,6 +11,7 @@ export default defineMeta({
     'theme-select',
     'theme-radio',
     'headless',
+    'forced-theme',
     'browser-chrome',
     'transitions',
     'custom-transition',

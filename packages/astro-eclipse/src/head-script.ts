@@ -27,7 +27,10 @@ export function buildHeadScript(config: EclipseConfig): string {
     `function p(){var v;try{v=localStorage.getItem(c.k)}catch(e){v=g()}` +
     `return v&&(v=='system'?c.s:c.t.indexOf(v)>-1)?v:c.d}` +
     `function r(){var v=p();return v=='system'?m.matches?'dark':'light':v}` +
-    `function a(e){var t=r();` +
+    (config.forcedTheme
+      ? `function f(e){var x=e.getAttribute('data-eclipse-forced');return c.t.indexOf(x)>-1?x:void 0}`
+      : '') +
+    `function a(e){var t=${config.forcedTheme ? 'f(e)||r()' : 'r()'};` +
     `if(c.a=='class')c.t.forEach(function(x){e.classList.toggle(x,x==t)});` +
     `else e.setAttribute(c.a,t)` +
     (config.colorScheme
@@ -38,7 +41,9 @@ export function buildHeadScript(config: EclipseConfig): string {
         `q||(q=o.createElement('meta'),q.name='theme-color',o.head.appendChild(q));q.content=c.m[t]}`
       : '') +
     `}` +
-    `function u(){a(h);d.dispatchEvent(new CustomEvent('eclipse:change',{detail:{theme:r(),preference:p()}}))}` +
+    (config.forcedTheme
+      ? `function u(){a(h);d.dispatchEvent(new CustomEvent('eclipse:change',{detail:{theme:f(h)||r(),preference:p(),forced:f(h)}}))}`
+      : `function u(){a(h);d.dispatchEvent(new CustomEvent('eclipse:change',{detail:{theme:r(),preference:p()}}))}`) +
     `a(h);` +
     `m.addEventListener('change',function(){p()=='system'&&u()});` +
     `w.addEventListener('storage',function(e){(!e.key||e.key==c.k)&&u()});` +

@@ -9,6 +9,8 @@ export interface ThemeChange {
   theme: string
   /** What the visitor chose: a theme name, or `'system'`. */
   preference: string
+  /** The theme the page is pinned to with `data-eclipse-forced`, or `undefined`. */
+  forced: string | undefined
 }
 
 export interface SetThemeOptions {
@@ -34,7 +36,11 @@ export interface Eclipse {
   getSystemTheme: () => 'light' | 'dark'
   /** The configured theme names, in order. Never contains `'system'`. */
   themes: readonly string[]
+  /** @internal The theme this page is pinned to, for the built-in components. */
+  getForced: () => string | undefined
 }
+
+export const FORCED_ATTRIBUTE = 'data-eclipse-forced'
 
 export const CHANGE_EVENT = 'eclipse:change'
 
@@ -82,12 +88,19 @@ export function createEclipse(config: EclipseConfig): Eclipse {
     applyChrome(document, theme, config)
   }
 
+  /** The theme this page is pinned to, when `forcedTheme` is on and the attribute names a known theme. */
+  function getForced(): string | undefined {
+    if (!config.forcedTheme || typeof document === 'undefined') return undefined
+    const value = document.documentElement.getAttribute(FORCED_ATTRIBUTE)
+    return value !== null && config.themes.includes(value) ? value : undefined
+  }
+
   function getTheme(): string {
-    return resolve(getPreference())
+    return getForced() ?? resolve(getPreference())
   }
 
   function emit(): void {
-    const detail: ThemeChange = { theme: getTheme(), preference: getPreference() }
+    const detail: ThemeChange = { theme: getTheme(), preference: getPreference(), forced: getForced() }
     document.dispatchEvent(new CustomEvent<ThemeChange>(CHANGE_EVENT, { detail }))
   }
 
@@ -106,6 +119,12 @@ export function createEclipse(config: EclipseConfig): Eclipse {
       unsaved = preference
     }
 
+    // A forced page keeps its theme: the choice is stored for the next unforced page, and nothing moves here.
+    if (getForced() !== undefined) {
+      emit()
+      return
+    }
+
     // Applies whatever is stored when it runs, so overlapping calls always end on the latest choice.
     const update = (): void => {
       apply(getTheme())
@@ -116,6 +135,7 @@ export function createEclipse(config: EclipseConfig): Eclipse {
       return
     }
     runTransition(update, {
+      guardCss: config.disableCssTransitions,
       name: options.transition ?? config.transition,
       duration: options.duration ?? config.duration,
       easing: options.easing ?? 'ease-in-out',
@@ -149,6 +169,7 @@ export function createEclipse(config: EclipseConfig): Eclipse {
     getPreference,
     onThemeChange,
     getSystemTheme,
+    getForced,
     themes: Object.freeze([...config.themes]),
   }
 }

@@ -99,16 +99,19 @@ function onThemeChange(listener: (change: ThemeChange) => void): () => void
 interface ThemeChange {
   theme: string // applied theme, never 'system'
   preference: string // what the visitor chose, may be 'system'
+  forced: string | undefined // the theme the page is pinned to, see the forced theme guide
 }
 ```
 
 Calls `listener` whenever the theme changes, and returns a function that removes the listener. It does not call the listener for the current value. Read it with `getTheme()` and `getPreference()` first.
 
+While a page is [forced](/guides/forced-theme), `getTheme()` returns the forced theme, `getPreference()` the stored choice, and `setTheme` stores without applying.
+
 It fires for `setTheme` and `toggleTheme`, for system changes while the preference is `system`, and for changes made in another tab. It is a wrapper over the `eclipse:change` event on `document`.
 
 ```ts
-const stop = onThemeChange(({ theme, preference }) => {
-  console.log(theme, preference)
+const stop = onThemeChange(({ theme, preference, forced }) => {
+  console.log(theme, preference, forced)
 })
 
 stop()

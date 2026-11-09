@@ -56,8 +56,8 @@ describe('astro-eclipse/client', () => {
     expectTypeOf<Origin>().toEqualTypeOf<MouseEvent | Element | Point | 'center'>()
   })
 
-  it('ThemeChange reports the applied theme and the preference', () => {
-    expectTypeOf<ThemeChange>().toEqualTypeOf<{ theme: string; preference: string }>()
+  it('ThemeChange reports the applied theme, the preference and the forced theme', () => {
+    expectTypeOf<ThemeChange>().toEqualTypeOf<{ theme: string; preference: string; forced: string | undefined }>()
   })
 
   it('the API has the documented functions', () => {

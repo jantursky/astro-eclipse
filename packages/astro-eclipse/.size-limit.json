@@ -12,12 +12,18 @@
     "limit": "1 kB"
   },
   {
+    "name": "Inline head script (forcedTheme)",
+    "path": ".size/head-inline-forced.js",
+    "gzip": true,
+    "limit": "600 B"
+  },
+  {
     "name": "Client API",
     "path": "dist/client/index.js",
     "import": "*",
     "ignore": ["virtual:astro-eclipse/config"],
     "gzip": true,
-    "limit": "4.5 kB"
+    "limit": "4.7 kB"
   },
   {
     "name": "Headless module (own code)",

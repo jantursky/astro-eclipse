@@ -75,13 +75,15 @@ const name = `eclipse-theme-${count}`
 </fieldset>
 
 <script>
-  import { getPreference, onThemeChange, setTheme, type SetThemeOptions } from 'astro-eclipse/client'
+  import { getForced, getPreference, onThemeChange, setTheme, type SetThemeOptions } from 'astro-eclipse/client'
 
   const SELECTOR = 'fieldset[data-eclipse-radio]'
 
   /** Checks the radio for the visitor's preference, which can be `system` while the applied theme is `dark`. */
   function sync(): void {
     const preference = getPreference()
+    const forced = getForced() !== undefined
+    for (const group of document.querySelectorAll<HTMLFieldSetElement>(SELECTOR)) group.disabled = forced
     for (const radio of document.querySelectorAll<HTMLInputElement>(`${SELECTOR} input[type="radio"]`)) {
       radio.checked = radio.value === preference
     }
@@ -132,6 +134,10 @@ const name = `eclipse-theme-${count}`
     align-items: center;
     gap: 0.4em;
     cursor: pointer;
+  }
+  :where(.eclipse-radio):disabled label {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   :where(.eclipse-radio) input:focus-visible {
     outline: 2px solid currentColor;

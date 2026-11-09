@@ -67,14 +67,16 @@ const initial = options.some((option) => option.value === config.default) ? conf
 </select>
 
 <script>
-  import { getPreference, onThemeChange, setTheme, type SetThemeOptions } from 'astro-eclipse/client'
+  import { getForced, getPreference, onThemeChange, setTheme, type SetThemeOptions } from 'astro-eclipse/client'
 
   const SELECTOR = 'select[data-eclipse-select]'
 
   /** Shows the visitor's preference, which can be `system` while the applied theme is `dark`. */
   function sync(): void {
     const preference = getPreference()
+    const forced = getForced() !== undefined
     for (const select of document.querySelectorAll<HTMLSelectElement>(SELECTOR)) {
+      select.disabled = forced
       if (select.value !== preference && [...select.options].some((option) => option.value === preference)) {
         select.value = preference
       }
@@ -114,6 +116,10 @@ const initial = options.some((option) => option.value === config.default) ? conf
     color: inherit;
     font: inherit;
     cursor: pointer;
+  }
+  :where(.eclipse-select):disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   :where(.eclipse-select):focus-visible {
     outline: 2px solid currentColor;

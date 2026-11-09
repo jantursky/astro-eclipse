@@ -17,6 +17,10 @@ export interface EclipseOptions {
   themeColor?: Record<string, string>
   /** Lets any element with `data-eclipse-set="<theme>"` switch the theme on click. Adds a small script to every page. Default: false. */
   headless?: boolean
+  /** Lets a page pin one theme with `<html data-eclipse-forced="dark">`, without changing the visitor's saved choice. Adds code to the head script. Default: false. */
+  forcedTheme?: boolean
+  /** Suppresses CSS transitions and animations for the frame of a theme change made through the client API. Default: false. */
+  disableCssTransitions?: boolean
 }
 
 export type ColorScheme = 'light' | 'dark'
@@ -31,6 +35,8 @@ export interface EclipseConfig {
   colorScheme?: Record<string, ColorScheme>
   themeColor?: Record<string, string>
   headless?: true
+  forcedTheme?: true
+  disableCssTransitions?: true
 }
 
 /** The value that follows `prefers-color-scheme`. Needs the themes `light` and `dark`. */
@@ -51,6 +57,8 @@ export function resolveConfig(options: EclipseOptions = {}): EclipseConfig {
     ...(options.colorScheme && { colorScheme: options.colorScheme }),
     ...(options.themeColor && { themeColor: options.themeColor }),
     ...(options.headless === true && { headless: true as const }),
+    ...(options.forcedTheme === true && { forcedTheme: true as const }),
+    ...(options.disableCssTransitions === true && { disableCssTransitions: true as const }),
   }
 
   if (themes.length === 0) throw new Error('astro-eclipse: `themes` needs at least one theme.')
@@ -78,6 +86,11 @@ export function resolveConfig(options: EclipseOptions = {}): EclipseConfig {
   }
   if (options.headless !== undefined && typeof options.headless !== 'boolean') {
     throw new Error('astro-eclipse: `headless` must be true or false.')
+  }
+  for (const option of ['forcedTheme', 'disableCssTransitions'] as const) {
+    if (options[option] !== undefined && typeof options[option] !== 'boolean') {
+      throw new Error(`astro-eclipse: \`${option}\` must be true or false.`)
+    }
   }
   checkKeys('colorScheme', config.colorScheme, themes)
   checkKeys('themeColor', config.themeColor, themes)

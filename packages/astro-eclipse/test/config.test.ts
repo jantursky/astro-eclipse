@@ -43,6 +43,8 @@ describe('resolveConfig', () => {
     [{ themeColor: { dark: '<b>' } }, /without "<"/],
     [{ headless: 'yes' }, /`headless` must be true or false/],
     [{ headless: 1 }, /`headless` must be true or false/],
+    [{ forcedTheme: 'yes' }, /`forcedTheme` must be true or false/],
+    [{ disableCssTransitions: 1 }, /`disableCssTransitions` must be true or false/],
   ])('rejects %j', (options, message) => {
     // Invalid values are the point of this test, so they bypass the option types.
     expect(() => resolveConfig(options as EclipseOptions)).toThrow(message)
@@ -52,6 +54,14 @@ describe('resolveConfig', () => {
     expect(resolveConfig()).not.toHaveProperty('headless')
     expect(resolveConfig({ headless: false })).not.toHaveProperty('headless')
     expect(resolveConfig({ headless: true }).headless).toBe(true)
+  })
+
+  it('leaves forcedTheme and disableCssTransitions out unless they are on', () => {
+    for (const option of ['forcedTheme', 'disableCssTransitions'] as const) {
+      expect(resolveConfig()).not.toHaveProperty(option)
+      expect(resolveConfig({ [option]: false })).not.toHaveProperty(option)
+      expect(resolveConfig({ [option]: true })[option]).toBe(true)
+    }
   })
 
   it('keeps colorScheme and themeColor when valid', () => {

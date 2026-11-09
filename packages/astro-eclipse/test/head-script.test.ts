@@ -211,4 +211,75 @@ describe('head script', () => {
   it('escapes anything that could close the script tag', () => {
     expect(buildHeadScript(config({ storageKey: '</script><b>' }))).not.toContain('</script>')
   })
+
+  describe('forced theme', () => {
+    const force = (value: string | null, root: Element = document.documentElement) => {
+      if (value === null) root.removeAttribute('data-eclipse-forced')
+      else root.setAttribute('data-eclipse-forced', value)
+    }
+    afterEach(() => {
+      document.documentElement.removeAttribute('data-eclipse-forced')
+    })
+
+    it('paints the forced theme and leaves the stored choice alone', () => {
+      localStorage.setItem('eclipse-theme', 'light')
+      force('dark')
+      runHeadScript({ forcedTheme: true })
+      expect(document.documentElement.dataset.theme).toBe('dark')
+      expect(localStorage.getItem('eclipse-theme')).toBe('light')
+    })
+
+    it('ignores a value that is not a theme', () => {
+      localStorage.setItem('eclipse-theme', 'light')
+      force('purple')
+      runHeadScript({ forcedTheme: true })
+      expect(document.documentElement.dataset.theme).toBe('light')
+    })
+
+    it('ignores the attribute when the option is off', () => {
+      localStorage.setItem('eclipse-theme', 'light')
+      force('dark')
+      runHeadScript()
+      expect(document.documentElement.dataset.theme).toBe('light')
+    })
+
+    it('forces the incoming document on a swap, and restores the choice for an unforced one', () => {
+      localStorage.setItem('eclipse-theme', 'light')
+      runHeadScript({ forcedTheme: true })
+      const forced = document.implementation.createHTMLDocument('')
+      force('dark', forced.documentElement)
+      document.dispatchEvent(Object.assign(new Event('astro:before-swap'), { newDocument: forced }))
+      expect(forced.documentElement.dataset.theme).toBe('dark')
+
+      const plain = document.implementation.createHTMLDocument('')
+      document.dispatchEvent(Object.assign(new Event('astro:before-swap'), { newDocument: plain }))
+      expect(plain.documentElement.dataset.theme).toBe('light')
+    })
+
+    it('keeps the forced theme on a storage event and reports it', () => {
+      localStorage.setItem('eclipse-theme', 'light')
+      force('dark')
+      runHeadScript({ forcedTheme: true })
+      const seen: unknown[] = []
+      document.addEventListener('eclipse:change', (event) => seen.push((event as CustomEvent).detail))
+      localStorage.setItem('eclipse-theme', 'light')
+      window.dispatchEvent(new StorageEvent('storage', { key: 'eclipse-theme', newValue: 'light' }))
+      expect(document.documentElement.dataset.theme).toBe('dark')
+      expect(seen).toEqual([{ theme: 'dark', preference: 'light', forced: 'dark' }])
+    })
+
+    it('reports forced as undefined on an unforced page', () => {
+      localStorage.setItem('eclipse-theme', 'light')
+      runHeadScript({ forcedTheme: true })
+      const seen: unknown[] = []
+      document.addEventListener('eclipse:change', (event) => seen.push((event as CustomEvent).detail))
+      window.dispatchEvent(new StorageEvent('storage', { key: 'eclipse-theme' }))
+      expect(seen).toEqual([{ theme: 'light', preference: 'light', forced: undefined }])
+    })
+
+    it('adds nothing to the default output', () => {
+      expect(buildHeadScript(config())).not.toContain('data-eclipse-forced')
+      expect(buildHeadScript(config({ forcedTheme: true }))).toContain('data-eclipse-forced')
+    })
+  })
 })

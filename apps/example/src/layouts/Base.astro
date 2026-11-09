@@ -7,10 +7,15 @@ import '../styles/global.css'
 interface Props {
   title: string
   description?: string
+  /** Pins the page to one theme, whatever the visitor chose. */
+  forced?: string
 }
 
-const { title, description = 'Animated theme transitions for Astro. No flash, survives ClientRouter navigation.' } =
-  Astro.props
+const {
+  title,
+  description = 'Animated theme transitions for Astro. No flash, survives ClientRouter navigation.',
+  forced,
+} = Astro.props
 const path = Astro.url.pathname.replace(/\/$/, '')
 const nav = [
   { href: '/gallery', label: 'Gallery', section: '/gallery' },
@@ -20,7 +25,7 @@ const nav = [
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-eclipse-forced={forced}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

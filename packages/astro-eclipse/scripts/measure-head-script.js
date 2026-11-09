@@ -1,5 +1,5 @@
-// Writes the inline head script for the default config, and for a config with every option on, to .size/,
-// where size-limit measures them. Also writes the headless module there, with its client import left external.
+// Writes the inline head script for the default config, for a config with the chrome options on and for one with
+// `forcedTheme` to .size/, where size-limit measures them. Also writes the headless module there, with its client import left external.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -19,6 +19,8 @@ writeFileSync(
     }),
   ),
 )
+
+writeFileSync(join(dir, 'head-inline-forced.js'), buildHeadScript(resolveConfig({ forcedTheme: true })))
 
 // The headless module imports the client API, which is measured on its own. Point the import at the package name,
 // so the budget covers only the module's own code (size-limit ignores that package).

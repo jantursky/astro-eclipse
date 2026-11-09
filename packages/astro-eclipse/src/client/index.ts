@@ -7,5 +7,5 @@ export type { Origin, Point } from './origin.js'
 export { defineTransition, getTransition } from './transitions.js'
 export type { Direction, TransitionContext, TransitionDefinition } from './transitions.js'
 
-export const { setTheme, toggleTheme, getTheme, getPreference, onThemeChange, getSystemTheme, themes } =
+export const { setTheme, toggleTheme, getTheme, getPreference, onThemeChange, getSystemTheme, getForced, themes } =
   createEclipse(config)

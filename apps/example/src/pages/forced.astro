@@ -1,0 +1,41 @@
+---
+import { ThemeRadio, ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
+import Base from '../layouts/Base.astro'
+---
+
+<Base title="Forced theme: Astro Eclipse" forced="dark">
+  <section class="wrap head">
+    <div class="stack">
+      <span class="label">Forced theme</span>
+      <h1 class="title">This page is always dark</h1>
+      <p class="lede">
+        The layout sets <code>data-eclipse-forced="dark"</code> on <code>&lt;html&gt;</code>. Your saved choice is kept
+        and comes back on the next page. The controls below are disabled here.
+      </p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <div class="card stack">
+      <ThemeToggle data-testid="forced-toggle" />
+      <ThemeSelect data-testid="forced-select" />
+      <ThemeRadio data-testid="forced-radio" />
+      <p class="slow" data-testid="slow">
+        A box with a slow CSS transition.
+      </p>
+      <p class="caption">
+        <a href="/component">Go to an unforced page</a>
+        or
+        <a href="/navigation/a">the navigation test</a>.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .slow {
+    padding: 12px 16px;
+    color: var(--canvas);
+    background-color: var(--text);
+    transition: background-color 3s linear;
+  }
+</style>

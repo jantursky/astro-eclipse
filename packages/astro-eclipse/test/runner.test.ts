@@ -147,6 +147,83 @@ describe('runTransition', () => {
     expect(document.head.querySelectorAll('style')).toHaveLength(0)
   })
 
+  describe('CSS transition guard', () => {
+    let frames: (() => void)[]
+    const flush = () => {
+      frames.splice(0).forEach((frame) => {
+        frame()
+      })
+    }
+    const guards = () =>
+      [...document.head.querySelectorAll('style')].filter((el) => el.textContent.includes('transition:none'))
+    beforeEach(() => {
+      frames = []
+      vi.stubGlobal('requestAnimationFrame', (frame: () => void) => frames.push(frame))
+    })
+
+    it('is not injected by default', () => {
+      delete (document as unknown as Record<string, unknown>).startViewTransition
+      runTransition(() => {
+        expect(guards()).toHaveLength(0)
+      }, request)
+    })
+
+    it('is present while the instant update runs and removed two frames later', () => {
+      delete (document as unknown as Record<string, unknown>).startViewTransition
+      let during = 0
+      runTransition(
+        () => {
+          during = guards().length
+        },
+        { ...request, guardCss: true },
+      )
+      expect(during).toBe(1)
+      expect(guards()).toHaveLength(1)
+      flush()
+      expect(guards()).toHaveLength(1)
+      flush()
+      expect(guards()).toHaveLength(0)
+    })
+
+    it('wraps the update of an animated change and leaves the reveal style alone', async () => {
+      let during = 0
+      runTransition(
+        () => {
+          during = guards().length
+        },
+        { ...request, guardCss: true },
+      )
+      started[0]!.run()
+      expect(during).toBe(1)
+      // The reveal's own style does not mention transitions.
+      expect(document.head.querySelectorAll('style')).toHaveLength(2)
+      flush()
+      flush()
+      expect(guards()).toHaveLength(0)
+      expect(document.head.querySelectorAll('style')).toHaveLength(1)
+      started[0]!.finish()
+      await started[0]!.finished
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(document.head.querySelectorAll('style')).toHaveLength(0)
+    })
+
+    it('removes the guard even when the update throws', () => {
+      delete (document as unknown as Record<string, unknown>).startViewTransition
+      expect(() => {
+        runTransition(
+          () => {
+            throw new Error('boom')
+          },
+          { ...request, guardCss: true },
+        )
+      }).toThrow('boom')
+      flush()
+      flush()
+      expect(guards()).toHaveLength(0)
+    })
+  })
+
   it('skips the running transition when a second one starts', () => {
     runTransition(() => {}, request)
     runTransition(() => {}, request)
