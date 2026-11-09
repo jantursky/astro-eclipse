@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-11-09
+
+### Added
+
+- `values` option: maps a theme to the DOM value written to `<html>` (`{ dark: 'theme-dark' }`), or to several space-separated classes in class mode. Storage, `getTheme()`, `getPreference()` and `onThemeChange` keep the theme names. Adds code to the head script only when set.
+- A guide on Content Security Policy, backed by tests: the head script is in Astro's CSP policy, a hand-written policy needs its hash, and what `script-src 'self'` alone does.
+
+### Fixed
+
+- Under a strict `style-src` (Astro's CSP support sets one), the reveal's `<style>` element was blocked and the browser's default cross-fade played along with the effect. The runner and the CSS guard now use constructed stylesheets, which `style-src` does not block. A browser that cannot adopt stylesheets goes without the CSS guard.
+- `test:pack` failed on Astro 5.0.0 and 6 because it expected no whitespace around option text.
+
 ## [1.5.0] - 2026-11-09
 
 ### Added
