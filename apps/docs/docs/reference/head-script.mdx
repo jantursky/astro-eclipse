@@ -18,6 +18,7 @@ The size is checked on every library build by size-limit, against a budget of 70
 
 7. When `colorScheme` or `themeColor` is set, sets `color-scheme` on `<html>` and `<meta name="theme-color">` at the same moments as the theme, including on the incoming document of a swap. See [browser chrome](/guides/browser-chrome). Without those options none of that code is in the script.
 8. When `forcedTheme` is set, a page whose `<html>` (or incoming document, on a swap) has `data-eclipse-forced="<theme>"` gets that theme instead of the stored choice, and the `storage` and system handlers keep it. See [forced theme](/guides/forced-theme). A config with `forcedTheme` is held to a 600 B budget.
+9. When `values` is set, the script writes `values[theme]` instead of the theme name, and in class mode removes the classes of every theme before adding the new ones. It also reads the current theme back from a mapped value when storage cannot be read, preferring the theme with the most classes in common. A config with `values` is held to a 650 B budget.
 
 The `eclipse:change` event is dispatched on `document` with `detail: { theme, preference }` (with `forced` added when `forcedTheme` is on). It is the same event `onThemeChange` listens to.
 
@@ -35,6 +36,6 @@ The theme names, default, attribute, key and whether `system` is allowed are wri
 
 ## Content security policy
 
-Because the script is inline, a strict `script-src` without `'unsafe-inline'` blocks it unless you allow it with a hash or nonce. This has not been tested here against Astro's CSP support.
+Because the script is inline, a strict `script-src` without `'unsafe-inline'` blocks it unless you allow it with a hash. Astro's own CSP support includes it. See the [content security policy guide](/guides/csp) for what was tested and how to get the hash.
 
 Related: [config](/reference/config), [ClientRouter](/guides/clientrouter), [getting started](/getting-started).

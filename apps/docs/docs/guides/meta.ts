@@ -13,6 +13,7 @@ export default defineMeta({
     'headless',
     'forced-theme',
     'browser-chrome',
+    'csp',
     'transitions',
     'custom-transition',
     'framework-islands',

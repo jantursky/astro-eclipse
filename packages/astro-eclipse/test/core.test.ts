@@ -266,6 +266,51 @@ describe('createEclipse', () => {
     })
   })
 
+  describe('value mapping', () => {
+    const cases: [string, EclipseOptions][] = [
+      ['attribute', { values: { dark: 'theme-dark', sepia: 'warm' } }],
+      [
+        'class',
+        { attribute: 'class', themes: ['light', 'dark', 'sepia'], values: { dark: 'dark night', sepia: 'night warm' } },
+      ],
+    ]
+
+    it.each(cases)('applies the mapped value (%s mode), keeping theme names in the API', (_mode, options) => {
+      const eclipse = setup({ themes: ['light', 'dark', 'sepia'], ...options })
+      eclipse.setTheme('dark')
+      expect(eclipse.getTheme()).toBe('dark')
+      expect(eclipse.getPreference()).toBe('dark')
+      expect(localStorage.getItem('eclipse-theme')).toBe('dark')
+    })
+
+    it.each(cases)('writes the same DOM as the head script for every theme (%s mode)', (_mode, options) => {
+      const full = { themes: ['light', 'dark', 'sepia'], ...options }
+      const dom = () => document.documentElement.outerHTML.replace(/<head>.*<\/head>/, '')
+      for (const name of ['light', 'dark', 'sepia']) {
+        resetDom()
+        setup(full).setTheme(name)
+        const fromClient = dom()
+
+        resetDom()
+        localStorage.setItem('eclipse-theme', name)
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
+        new Function(buildHeadScript(config(full)))()
+        expect(dom()).toBe(fromClient)
+      }
+    })
+
+    it('moves a class the previous theme shared to the new one', () => {
+      const eclipse = setup({
+        themes: ['light', 'dark', 'sepia'],
+        attribute: 'class',
+        values: { dark: 'dark shared', sepia: 'shared warm' },
+      })
+      eclipse.setTheme('dark')
+      eclipse.setTheme('sepia')
+      expect([...document.documentElement.classList].sort()).toEqual(['shared', 'warm'])
+    })
+  })
+
   describe('forced theme', () => {
     afterEach(() => {
       vi.unstubAllGlobals()

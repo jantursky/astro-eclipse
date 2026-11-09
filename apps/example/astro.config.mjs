@@ -7,6 +7,7 @@ export default defineConfig({
       themes: ['light', 'dark', 'sepia', 'forest'],
       default: 'system',
       headless: true,
+      values: { forest: 'theme-forest' },
       forcedTheme: true,
       disableCssTransitions: true,
       attribute: 'data-theme',

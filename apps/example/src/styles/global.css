@@ -26,7 +26,7 @@
   --logo-gradient-to: #f041ff;
 }
 
-:root[data-theme='forest'] {
+:root[data-theme='theme-forest'] {
   color-scheme: dark;
   --canvas: #0b1410;
   --surface: #0b1410;

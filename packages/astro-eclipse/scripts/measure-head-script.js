@@ -20,6 +20,19 @@ writeFileSync(
   ),
 )
 
+writeFileSync(join(dir, 'head-inline-values.js'), buildHeadScript(resolveConfig({ values: { dark: 'theme-dark' } })))
+writeFileSync(
+  join(dir, 'head-inline-values-class.js'),
+  buildHeadScript(
+    resolveConfig({
+      themes: ['light', 'dark', 'sepia', 'forest'],
+      attribute: 'class',
+      colorScheme: { light: 'light', dark: 'dark', sepia: 'light', forest: 'dark' },
+      themeColor: { light: '#ffffff', dark: '#111111', sepia: '#f4ecd8', forest: '#10241a' },
+      values: { light: 'theme-light', dark: 'theme-dark', sepia: 'theme-sepia', forest: 'theme-forest' },
+    }),
+  ),
+)
 writeFileSync(join(dir, 'head-inline-forced.js'), buildHeadScript(resolveConfig({ forcedTheme: true })))
 
 // The headless module imports the client API, which is measured on its own. Point the import at the package name,

@@ -80,10 +80,13 @@ export function createEclipse(config: EclipseConfig): Eclipse {
 
   function apply(theme: string): void {
     const root = document.documentElement
+    const tokens = (name: string): string[] => (config.values?.[name] ?? name).split(' ')
     if (config.attribute === 'class') {
-      for (const name of config.themes) root.classList.toggle(name, name === theme)
+      // Remove every theme's classes first, so a class two themes share ends up on the one that is applied.
+      for (const name of config.themes) root.classList.remove(...tokens(name))
+      root.classList.add(...tokens(theme))
     } else {
-      root.setAttribute(config.attribute, theme)
+      root.setAttribute(config.attribute, config.values?.[theme] ?? theme)
     }
     applyChrome(document, theme, config)
   }

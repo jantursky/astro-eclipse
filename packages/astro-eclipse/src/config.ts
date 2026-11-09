@@ -17,6 +17,8 @@ export interface EclipseOptions {
   themeColor?: Record<string, string>
   /** Lets any element with `data-eclipse-set="<theme>"` switch the theme on click. Adds a small script to every page. Default: false. */
   headless?: boolean
+  /** DOM value per theme, e.g. `{ dark: 'theme-dark' }`; in class mode, space-separated classes. Storage and the API keep theme names. Default: the theme name. */
+  values?: Record<string, string>
   /** Lets a page pin one theme with `<html data-eclipse-forced="dark">`, without changing the visitor's saved choice. Adds code to the head script. Default: false. */
   forcedTheme?: boolean
   /** Suppresses CSS transitions and animations for the frame of a theme change made through the client API. Default: false. */
@@ -35,6 +37,7 @@ export interface EclipseConfig {
   colorScheme?: Record<string, ColorScheme>
   themeColor?: Record<string, string>
   headless?: true
+  values?: Record<string, string>
   forcedTheme?: true
   disableCssTransitions?: true
 }
@@ -43,6 +46,7 @@ export interface EclipseConfig {
 export const SYSTEM = 'system'
 
 const NAME = /^[a-z][a-z0-9-]*$/i
+const TOKENS = /^[^\s"'<>]+(?: [^\s"'<>]+)*$/
 const ATTRIBUTE = /^(class|data-[a-z][a-z0-9-]*)$/
 
 export function resolveConfig(options: EclipseOptions = {}): EclipseConfig {
@@ -56,6 +60,7 @@ export function resolveConfig(options: EclipseOptions = {}): EclipseConfig {
     duration: options.duration ?? 500,
     ...(options.colorScheme && { colorScheme: options.colorScheme }),
     ...(options.themeColor && { themeColor: options.themeColor }),
+    ...(options.values && { values: options.values }),
     ...(options.headless === true && { headless: true as const }),
     ...(options.forcedTheme === true && { forcedTheme: true as const }),
     ...(options.disableCssTransitions === true && { disableCssTransitions: true as const }),
@@ -94,6 +99,14 @@ export function resolveConfig(options: EclipseOptions = {}): EclipseConfig {
   }
   checkKeys('colorScheme', config.colorScheme, themes)
   checkKeys('themeColor', config.themeColor, themes)
+  checkKeys('values', config.values, themes)
+  for (const [theme, value] of Object.entries<unknown>(config.values ?? {})) {
+    if (typeof value !== 'string' || !TOKENS.test(value)) {
+      throw new Error(
+        `astro-eclipse: \`values.${theme}\` must be a non-empty string of space-separated tokens without quotes or "<".`,
+      )
+    }
+  }
   for (const [theme, value] of Object.entries<string>(config.colorScheme ?? {})) {
     if (value !== 'light' && value !== 'dark') {
       throw new Error(`astro-eclipse: \`colorScheme.${theme}\` must be "light" or "dark", got "${value}".`)

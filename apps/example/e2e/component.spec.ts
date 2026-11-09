@@ -39,7 +39,8 @@ test('cycles every theme of the config in order', async ({ page }) => {
     previous = await themeAttribute(page)
     seen.push(previous)
   }
-  expect(seen).toEqual(['dark', 'sepia', 'forest', 'light'])
+  // `forest` is written as `theme-forest` (the `values` option in the demo config).
+  expect(seen).toEqual(['dark', 'sepia', 'theme-forest', 'light'])
 })
 
 test('still works after a ClientRouter navigation and back', async ({ page }) => {

@@ -282,4 +282,72 @@ describe('head script', () => {
       expect(buildHeadScript(config({ forcedTheme: true }))).toContain('data-eclipse-forced')
     })
   })
+
+  describe('value mapping', () => {
+    const themes = ['light', 'dark', 'sepia']
+    const classes = () => [...document.documentElement.classList].sort()
+
+    it('writes the mapped value to the attribute', () => {
+      localStorage.setItem('eclipse-theme', 'dark')
+      runHeadScript({ values: { dark: 'theme-dark' } })
+      expect(document.documentElement.dataset.theme).toBe('theme-dark')
+      expect(localStorage.getItem('eclipse-theme')).toBe('dark')
+    })
+
+    it('falls back to the theme name for a theme without an entry', () => {
+      localStorage.setItem('eclipse-theme', 'light')
+      runHeadScript({ values: { dark: 'theme-dark' } })
+      expect(document.documentElement.dataset.theme).toBe('light')
+    })
+
+    it('adds several classes and removes the other themes in class mode', () => {
+      document.documentElement.className = 'light theme-day other'
+      localStorage.setItem('eclipse-theme', 'dark')
+      runHeadScript({
+        themes,
+        attribute: 'class',
+        values: { light: 'light theme-day', dark: 'dark theme-night' },
+      })
+      expect(classes()).toEqual(['dark', 'other', 'theme-night'])
+    })
+
+    it('lets the applied theme win a class that two themes share', () => {
+      localStorage.setItem('eclipse-theme', 'sepia')
+      runHeadScript({ themes, attribute: 'class', values: { dark: 'dark shared', sepia: 'shared warm' } })
+      expect(classes()).toEqual(['shared', 'warm'])
+    })
+
+    it('recognises the current theme from a mapped attribute value when storage cannot be read', () => {
+      document.documentElement.dataset.theme = 'theme-dark'
+      blockStorage({ read: true })
+      runHeadScript({ default: 'light', values: { dark: 'theme-dark' } })
+      expect(document.documentElement.dataset.theme).toBe('theme-dark')
+    })
+
+    it('recognises the current theme from mapped classes, preferring the most specific theme', () => {
+      document.documentElement.className = 'dark theme-night'
+      blockStorage({ read: true })
+      // `light` is listed last and maps to a class the page lacks, `sepia` shares `dark`: the longer match wins.
+      runHeadScript({
+        themes: ['dark', 'sepia', 'light'],
+        attribute: 'class',
+        default: 'light',
+        values: { dark: 'dark', sepia: 'dark theme-night' },
+      })
+      expect(classes()).toEqual(['dark', 'theme-night'])
+    })
+
+    it('applies the mapped value to the incoming document on a swap', () => {
+      localStorage.setItem('eclipse-theme', 'dark')
+      runHeadScript({ values: { dark: 'theme-dark' } })
+      const newDocument = document.implementation.createHTMLDocument('next')
+      document.dispatchEvent(Object.assign(new Event('astro:before-swap'), { newDocument }))
+      expect(newDocument.documentElement.dataset.theme).toBe('theme-dark')
+    })
+
+    it('adds nothing to the output without the option', () => {
+      expect(buildHeadScript(config())).not.toContain('split')
+      expect(buildHeadScript(config({ values: { dark: 'x' } }))).toContain('split')
+    })
+  })
 })

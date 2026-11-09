@@ -18,6 +18,18 @@
     "limit": "600 B"
   },
   {
+    "name": "Inline head script (values)",
+    "path": ".size/head-inline-values.js",
+    "gzip": true,
+    "limit": "650 B"
+  },
+  {
+    "name": "Inline head script (class mode + colorScheme + themeColor + values)",
+    "path": ".size/head-inline-values-class.js",
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
     "name": "Client API",
     "path": "dist/client/index.js",
     "import": "*",

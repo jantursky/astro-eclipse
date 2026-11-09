@@ -46,16 +46,29 @@ let active: ViewTransition | undefined
 const prefersReducedMotion = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
+ * Add CSS to the document for a moment and return the function that takes it out. A constructed stylesheet is not
+ * an inline style, so a strict `style-src` (Astro's CSP support sets one) does not block it. A browser that cannot
+ * adopt stylesheets also has no View Transitions, so it needs only the CSS guard, which it then goes without.
+ */
+function addStyle(css: string): () => void {
+  if (typeof CSSStyleSheet !== 'function' || !('adoptedStyleSheets' in document)) return noop
+  const sheet = new CSSStyleSheet()
+  sheet.replaceSync(css)
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]
+  return () => {
+    document.adoptedStyleSheets = document.adoptedStyleSheets.filter((other) => other !== sheet)
+  }
+}
+
+/**
  * Both snapshots are drawn on top of each other by default, with their own animations. Switch those
  * off for the duration of one transition, so the effect is the only thing that moves.
  */
-function injectStyle(top: 'old' | 'new'): HTMLStyleElement {
-  const style = document.createElement('style')
-  style.textContent =
+function injectStyle(top: 'old' | 'new'): () => void {
+  return addStyle(
     '::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}' +
-    `::view-transition-${top}(root){z-index:2}`
-  document.head.append(style)
-  return style
+      `::view-transition-${top}(root){z-index:2}`,
+  )
 }
 
 /**
@@ -64,9 +77,7 @@ function injectStyle(top: 'old' | 'new'): HTMLStyleElement {
  * by `*`, so the reveal still plays.
  */
 function guardCss(update: () => void): () => void {
-  const style = document.createElement('style')
-  style.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}'
-  document.head.append(style)
+  const remove = addStyle('*,*::before,*::after{transition:none!important;animation:none!important}')
   return () => {
     try {
       update()
@@ -74,7 +85,7 @@ function guardCss(update: () => void): () => void {
       // Two frames, so style recalculation has settled before transitions come back.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          style.remove()
+          remove()
         })
       })
     }
@@ -103,7 +114,7 @@ export function runTransition(change: () => void, request: TransitionRequest): v
 
   // Skipping still runs the first update, so the page ends on the latest theme either way.
   active?.skipTransition()
-  const style = injectStyle(definition.top ?? 'new')
+  const removeStyle = injectStyle(definition.top ?? 'new')
   const transition = document.startViewTransition(update)
   active = transition
 
@@ -132,7 +143,7 @@ export function runTransition(change: () => void, request: TransitionRequest): v
   )
   transition.updateCallbackDone.catch(noop)
   void transition.finished.catch(noop).then(() => {
-    style.remove()
+    removeStyle()
     if (active === transition) active = undefined
   })
 }

@@ -43,6 +43,11 @@ describe('resolveConfig', () => {
     [{ themeColor: { dark: '<b>' } }, /without "<"/],
     [{ headless: 'yes' }, /`headless` must be true or false/],
     [{ headless: 1 }, /`headless` must be true or false/],
+    [{ values: { sepia: 'x' } }, /`values` key "sepia" is not in `themes`/],
+    [{ values: { dark: '' } }, /`values.dark` must be a non-empty string/],
+    [{ values: { dark: 'a  b' } }, /`values.dark` must be a non-empty string/],
+    [{ values: { dark: 'a"b' } }, /`values.dark` must be a non-empty string/],
+    [{ values: { dark: 1 } }, /`values.dark` must be a non-empty string/],
     [{ forcedTheme: 'yes' }, /`forcedTheme` must be true or false/],
     [{ disableCssTransitions: 1 }, /`disableCssTransitions` must be true or false/],
   ])('rejects %j', (options, message) => {
@@ -54,6 +59,13 @@ describe('resolveConfig', () => {
     expect(resolveConfig()).not.toHaveProperty('headless')
     expect(resolveConfig({ headless: false })).not.toHaveProperty('headless')
     expect(resolveConfig({ headless: true }).headless).toBe(true)
+  })
+
+  it('keeps values when valid and leaves them out otherwise', () => {
+    expect(resolveConfig({ values: { dark: 'theme-dark theme-night' } }).values).toEqual({
+      dark: 'theme-dark theme-night',
+    })
+    expect(resolveConfig()).not.toHaveProperty('values')
   })
 
   it('leaves forcedTheme and disableCssTransitions out unless they are on', () => {

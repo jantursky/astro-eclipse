@@ -1,6 +1,7 @@
 // Installs the packed tarball into an empty project, the way a consumer gets it from npm,
 // then builds a fresh Astro site with the integration. Run after `bun run build`.
 import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -77,7 +78,7 @@ import { ThemeRadio, ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
     [...html.matchAll(/type="radio"[^>]*name="([^"]+)"|name="([^"]+)"[^>]*type="radio"/g)].map((m) => m[1] ?? m[2]),
   )
   if (radioNames.size !== 2) throw new Error(`Expected 2 radio group names, got ${[...radioNames].join(', ')}`)
-  if (!html.includes('data-eclipse-select') || !html.includes('>Night<'))
+  if (!html.includes('data-eclipse-select') || !/>\s*Night\s*</.test(html))
     throw new Error('ThemeSelect was not rendered')
   if (!html.includes('eclipse-theme')) throw new Error('The inline head script is missing from the built page')
   // Astro inlines small scripts into the page, so look in the HTML and in the emitted assets.
@@ -89,6 +90,34 @@ import { ThemeRadio, ThemeSelect, ThemeToggle } from 'astro-eclipse/components'
   // script that `headless` injects is such an import; it must survive into the build.
   if (!bundled.includes('[data-eclipse-set]')) throw new Error('The headless module is missing from the built site')
   console.log('built a fresh Astro site: head script inlined, client API and headless module bundled')
+
+  // Under Astro's CSP support the inline head script must be in the policy's `script-src` hashes, or a site that
+  // turns the policy on loses the no-flash script. Astro versions without `security.csp` skip the check.
+  const config = readFileSync(join(dir, 'astro.config.mjs'), 'utf8')
+  write(
+    'astro.config.mjs',
+    config.replace('export default defineConfig({', 'export default defineConfig({ security: { csp: true },'),
+  )
+  let cspBuilt = true
+  try {
+    run('npx', ['astro', 'build'], dir)
+  } catch {
+    cspBuilt = false
+  }
+  const cspHtml = cspBuilt ? readFileSync(join(dir, 'dist/index.html'), 'utf8') : ''
+  const policy = cspHtml.match(/http-equiv="content-security-policy" content="([^"]*)"/)?.[1]
+  if (policy === undefined) {
+    console.log('this Astro version has no security.csp: CSP check skipped')
+  } else {
+    const head = [...cspHtml.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)].find((match) =>
+      match[1].includes('eclipse-theme'),
+    )?.[1]
+    if (head === undefined) throw new Error('The inline head script is missing under security.csp')
+    const hash = `'sha256-${createHash('sha256').update(head).digest('base64')}'`
+    if (!policy.includes(hash)) throw new Error(`The head script hash ${hash} is not in the CSP script-src`)
+    console.log("the head script is allowed by Astro's CSP policy")
+  }
+  write('astro.config.mjs', config)
 
   // Invalid `themes` must fail the build with a message that names the problem.
   for (const [themes, message] of [

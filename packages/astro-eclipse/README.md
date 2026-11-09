@@ -137,7 +137,7 @@ For markdown or CMS content, turn on `headless: true` and add `data-eclipse-set=
 <a href="#" data-eclipse-set="dark">Dark</a>
 ```
 
-To pin a page to one theme without changing the visitor's saved choice, turn on `forcedTheme: true` and set `<html data-eclipse-forced="dark">` in that page's layout. `disableCssTransitions: true` stops elements with their own CSS transitions from lagging behind a theme change.
+To pin a page to one theme without changing the visitor's saved choice, turn on `forcedTheme: true` and set `<html data-eclipse-forced="dark">` in that page's layout. `values` writes a different DOM value than the theme name (`values: { dark: 'theme-dark' }`), keeping the names in storage and the API. `disableCssTransitions: true` stops elements with their own CSS transitions from lagging behind a theme change.
 
 ## Transitions
 

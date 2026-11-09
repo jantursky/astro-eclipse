@@ -17,13 +17,19 @@ export function buildHeadScript(config: EclipseConfig): string {
     s: supportsSystem(config),
     c: config.colorScheme,
     m: config.themeColor,
+    v: config.values,
   }).replace(/</g, '\\u003c')
 
   return (
     `(function(w,d,c){` +
     `var h=d.documentElement,m=w.matchMedia('(prefers-color-scheme: dark)');` +
-    `function g(){var x;if(c.a=='class')c.t.forEach(function(t){h.classList.contains(t)&&(x=t)});` +
-    `else x=h.getAttribute(c.a);return c.t.indexOf(x)>-1&&x}` +
+    (config.values
+      ? `function z(t){return(c.v[t]||t).split(' ')}` +
+        `function g(){var x,n=0,y=h.getAttribute(c.a);if(c.a=='class')c.t.forEach(function(t){var k=z(t);` +
+        `k.length>=n&&k.every(function(j){return h.classList.contains(j)})&&(x=t,n=k.length)});` +
+        `else c.t.forEach(function(t){(c.v[t]||t)==y&&(x=t)});return c.t.indexOf(x)>-1&&x}`
+      : `function g(){var x;if(c.a=='class')c.t.forEach(function(t){h.classList.contains(t)&&(x=t)});` +
+        `else x=h.getAttribute(c.a);return c.t.indexOf(x)>-1&&x}`) +
     `function p(){var v;try{v=localStorage.getItem(c.k)}catch(e){v=g()}` +
     `return v&&(v=='system'?c.s:c.t.indexOf(v)>-1)?v:c.d}` +
     `function r(){var v=p();return v=='system'?m.matches?'dark':'light':v}` +
@@ -31,8 +37,10 @@ export function buildHeadScript(config: EclipseConfig): string {
       ? `function f(e){var x=e.getAttribute('data-eclipse-forced');return c.t.indexOf(x)>-1?x:void 0}`
       : '') +
     `function a(e){var t=${config.forcedTheme ? 'f(e)||r()' : 'r()'};` +
-    `if(c.a=='class')c.t.forEach(function(x){e.classList.toggle(x,x==t)});` +
-    `else e.setAttribute(c.a,t)` +
+    (config.values
+      ? `if(c.a=='class'){c.t.forEach(function(x){z(x).forEach(function(j){e.classList.remove(j)})});` +
+        `z(t).forEach(function(j){e.classList.add(j)})}else e.setAttribute(c.a,c.v[t]||t)`
+      : `if(c.a=='class')c.t.forEach(function(x){e.classList.toggle(x,x==t)});` + `else e.setAttribute(c.a,t)`) +
     (config.colorScheme
       ? `;c.c[t]?e.style.setProperty('color-scheme',c.c[t]):e.style.removeProperty('color-scheme')`
       : '') +

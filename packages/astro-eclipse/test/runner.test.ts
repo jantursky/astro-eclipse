@@ -37,8 +37,16 @@ describe('runTransition', () => {
   let started: ReturnType<typeof fakeTransition>[]
   let skipNext: boolean
   let animate: ReturnType<typeof vi.fn>
+  /** The CSS of every stylesheet the runner has adopted and not yet removed. */
+  let css: Map<CSSStyleSheet, string>
+  const adopted = (): string[] => document.adoptedStyleSheets.map((sheet) => css.get(sheet) ?? '')
 
   beforeEach(() => {
+    css = new Map()
+    vi.spyOn(CSSStyleSheet.prototype, 'replaceSync').mockImplementation(function (this: CSSStyleSheet, text: string) {
+      css.set(this, text)
+    })
+    document.adoptedStyleSheets = []
     resetDom()
     watchNavigation()
     document.dispatchEvent(new Event('astro:after-preparation'))
@@ -58,6 +66,7 @@ describe('runTransition', () => {
   afterEach(() => {
     delete (document as unknown as Record<string, unknown>).startViewTransition
     vi.unstubAllGlobals()
+    vi.restoreAllMocks()
   })
 
   it('switches instantly without the View Transitions API', () => {
@@ -130,20 +139,34 @@ describe('runTransition', () => {
 
   it('puts the old snapshot on top for circle-inverse', async () => {
     runTransition(() => {}, { ...request, name: 'circle-inverse' })
-    expect(document.head.querySelector('style')?.textContent).toContain('::view-transition-old(root){z-index:2}')
+    expect(adopted().join('')).toContain('::view-transition-old(root){z-index:2}')
     started[0]!.run()
     await started[0]!.ready
     await Promise.resolve()
     expect(animate.mock.calls[0]![1]).toMatchObject({ pseudoElement: '::view-transition-old(root)' })
   })
 
-  it('removes its style element when the transition finishes', async () => {
+  it('removes its stylesheet when the transition finishes', async () => {
     runTransition(() => {}, request)
-    expect(document.head.querySelectorAll('style')).toHaveLength(1)
+    expect(adopted()).toHaveLength(1)
     started[0]!.finish()
     await started[0]!.finished
     await Promise.resolve()
     await Promise.resolve()
+    expect(adopted()).toHaveLength(0)
+  })
+
+  it('adds no <style> element, which a strict style-src would block', () => {
+    runTransition(() => {}, request)
+    expect(document.head.querySelectorAll('style')).toHaveLength(0)
+  })
+
+  it('goes without the CSS guard where stylesheets cannot be adopted, and still runs the update', () => {
+    vi.stubGlobal('CSSStyleSheet', undefined)
+    delete (document as unknown as Record<string, unknown>).startViewTransition
+    const update = vi.fn()
+    runTransition(update, { ...request, guardCss: true })
+    expect(update).toHaveBeenCalledOnce()
     expect(document.head.querySelectorAll('style')).toHaveLength(0)
   })
 
@@ -154,8 +177,7 @@ describe('runTransition', () => {
         frame()
       })
     }
-    const guards = () =>
-      [...document.head.querySelectorAll('style')].filter((el) => el.textContent.includes('transition:none'))
+    const guards = () => adopted().filter((text) => text.includes('transition:none'))
     beforeEach(() => {
       frames = []
       vi.stubGlobal('requestAnimationFrame', (frame: () => void) => frames.push(frame))
@@ -196,16 +218,16 @@ describe('runTransition', () => {
       started[0]!.run()
       expect(during).toBe(1)
       // The reveal's own style does not mention transitions.
-      expect(document.head.querySelectorAll('style')).toHaveLength(2)
+      expect(adopted()).toHaveLength(2)
       flush()
       flush()
       expect(guards()).toHaveLength(0)
-      expect(document.head.querySelectorAll('style')).toHaveLength(1)
+      expect(adopted()).toHaveLength(1)
       started[0]!.finish()
       await started[0]!.finished
       await Promise.resolve()
       await Promise.resolve()
-      expect(document.head.querySelectorAll('style')).toHaveLength(0)
+      expect(adopted()).toHaveLength(0)
     })
 
     it('removes the guard even when the update throws', () => {

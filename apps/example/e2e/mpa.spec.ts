@@ -22,9 +22,9 @@ for (const [from, to, label] of PAIRS) {
       await expect(page.getByTestId('page-id')).toHaveText(`Page ${to}`)
       // The log belongs to the new document: its first value is already the stored theme, so nothing flashed.
       const log = await themeLog(page)
-      expect(log[0]).toBe('forest')
-      expect(new Set(log)).toEqual(new Set(['forest']))
-      expect(await themeAttribute(page)).toBe('forest')
+      expect(log[0]).toBe('theme-forest')
+      expect(new Set(log)).toEqual(new Set(['theme-forest']))
+      expect(await themeAttribute(page)).toBe('theme-forest')
       expect(errors).toEqual([])
     })
 

@@ -31,6 +31,20 @@ Then declare the variant in Tailwind 4:
 <body class="bg-white text-black dark:bg-black dark:text-white"></body>
 ```
 
+### Different class names than the themes
+
+When the class must not be the theme name (a `dark` theme that adds `theme-dark`, or several classes at once), map it with `values`. Storage and the API keep the theme names.
+
+```js astro.config.mjs
+eclipse({
+  attribute: 'class',
+  themes: ['light', 'dark'],
+  values: { dark: 'dark theme-night' },
+})
+```
+
+The theme `dark` then puts the classes `dark` and `theme-night` on `<html>`, and the classes of every other theme are removed first. A theme without an entry uses its own name. The same option works with `data-theme`: `{ dark: 'theme-dark' }` writes `data-theme="theme-dark"`.
+
 ## Option 2: keep data-theme
 
 If you would rather keep the default attribute, point the variant at it. No `attribute` option is needed:
