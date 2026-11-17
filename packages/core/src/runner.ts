@@ -1,6 +1,12 @@
 import { resolveOrigin, type Origin } from './origin.js'
 import { getTransition, type Direction } from './transitions.js'
 
+/**
+ * A DOM change. It may return a promise, for frameworks that apply state on a later tick: the new snapshot is taken
+ * once it settles.
+ */
+export type Change = () => void | Promise<void>
+
 export interface TransitionRequest {
   name: string
   duration: number
@@ -52,27 +58,34 @@ function injectStyle(top: 'old' | 'new'): () => void {
  * `update` runs and until the frame after it has been drawn. The view-transition pseudo-elements are not matched
  * by `*`, so the reveal still plays.
  */
-function guardCss(update: () => void): () => void {
+function guardCss(update: Change): Change {
   const remove = addStyle('*,*::before,*::after{transition:none!important;animation:none!important}')
-  return () => {
-    try {
-      update()
-    } finally {
-      // Two frames, so style recalculation has settled before transitions come back.
+  // Two frames, so style recalculation has settled before transitions come back.
+  const release = (): void => {
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          remove()
-        })
+        remove()
       })
+    })
+  }
+  return () => {
+    let pending: void | Promise<void>
+    try {
+      pending = update()
+    } catch (error) {
+      release()
+      throw error
     }
+    if (pending === undefined) { release(); return; }
+    return pending.finally(release)
   }
 }
 
 /**
- * Run `update` (a synchronous DOM change) inside a View Transition when the browser, the visitor and the
+ * Run `change` (a DOM change) inside a View Transition when the browser, the visitor and the
  * page allow it, and plainly otherwise. Never throws because an effect could not run.
  */
-export function runTransition(change: () => void, request: TransitionRequest): void {
+export function runTransition(change: Change, request: TransitionRequest): void {
   const update = request.guardCss === true ? guardCss(change) : change
   const definition = getTransition(request.name)
   const canAnimate =
@@ -84,7 +97,7 @@ export function runTransition(change: () => void, request: TransitionRequest): v
     request.isBusy?.() !== true
 
   if (!canAnimate) {
-    update()
+    void update()
     return
   }
 

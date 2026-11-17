@@ -201,6 +201,21 @@ describe('runTransition', () => {
       expect(adopted()).toHaveLength(0)
     })
 
+    it('keeps the guard until an asynchronous update has settled', async () => {
+      delete (document as unknown as Record<string, unknown>).startViewTransition
+      let settle!: () => void
+      runTransition(() => new Promise<void>((resolve) => (settle = resolve)), { ...request, guardCss: true })
+      flush()
+      flush()
+      expect(guards()).toHaveLength(1)
+      settle()
+      await Promise.resolve()
+      await Promise.resolve()
+      flush()
+      flush()
+      expect(guards()).toHaveLength(0)
+    })
+
     it('removes the guard even when the update throws', () => {
       delete (document as unknown as Record<string, unknown>).startViewTransition
       expect(() => {

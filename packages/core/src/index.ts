@@ -1,6 +1,6 @@
 export { coverRadius, resolveOrigin } from './origin.js'
 export type { Origin, Point } from './origin.js'
 export { noop, runTransition } from './runner.js'
-export type { TransitionRequest } from './runner.js'
+export type { Change, TransitionRequest } from './runner.js'
 export { defineTransition, getTransition } from './transitions.js'
 export type { Direction, TransitionContext, TransitionDefinition } from './transitions.js'
