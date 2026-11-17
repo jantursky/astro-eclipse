@@ -1,5 +1,5 @@
 import { SYSTEM, supportsSystem, type EclipseConfig } from '../config.js'
-import type { Direction, Origin } from '@penumbra/core'
+import type { Direction, Origin } from 'penumbra-core'
 import { applyChrome } from './chrome.js'
 import { noop, runTransition, watchNavigation } from './runner.js'
 

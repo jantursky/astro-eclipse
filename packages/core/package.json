@@ -1,5 +1,5 @@
 {
-  "name": "@penumbra/core",
+  "name": "penumbra-core",
   "version": "1.0.0",
   "description": "Animated theme transitions on the View Transitions API: circle reveal, wipe, blinds and more. The shared engine behind astro-penumbra and nuxt-penumbra.",
   "license": "MIT",

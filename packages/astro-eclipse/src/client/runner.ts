@@ -1,4 +1,4 @@
-import { noop, runTransition as run, type TransitionRequest as CoreRequest } from '@penumbra/core'
+import { noop, runTransition as run, type TransitionRequest as CoreRequest } from 'penumbra-core'
 
 export { noop }
 
@@ -30,7 +30,7 @@ const isNavigating = (): boolean =>
   document.documentElement.hasAttribute(ASTRO_NAVIGATING) ||
   (fetchingSince !== 0 && Date.now() - fetchingSince < FETCH_TIMEOUT)
 
-/** Run `change` inside a View Transition unless Astro is navigating. See `@penumbra/core`. */
+/** Run `change` inside a View Transition unless Astro is navigating. See `penumbra-core`. */
 export function runTransition(change: () => void, request: TransitionRequest): void {
   run(change, { ...request, isBusy: isNavigating })
 }

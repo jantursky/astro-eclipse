@@ -11,7 +11,7 @@ const request: TransitionRequest = {
   direction: 'right',
 }
 
-/** The effects themselves are tested in `@penumbra/core`; here only Astro's navigation guard. */
+/** The effects themselves are tested in `penumbra-core`; here only Astro's navigation guard. */
 describe('runTransition under Astro', () => {
   let started: number
 
