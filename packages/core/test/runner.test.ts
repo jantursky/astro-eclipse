@@ -51,7 +51,7 @@ describe('runTransition', () => {
     media = mockMedia()
     started = []
     skipNext = false
-    animate = vi.fn()
+    animate = vi.fn(() => ({ cancel: vi.fn() }))
     document.documentElement.animate = animate as unknown as typeof document.documentElement.animate
     vi.stubGlobal('innerWidth', 1000)
     vi.stubGlobal('innerHeight', 600)
@@ -249,6 +249,16 @@ describe('runTransition', () => {
     // The first one finishing must not forget the second: a third call still skips the second.
     runTransition(() => {}, request)
     expect(started[1]!.skipTransition).toHaveBeenCalledOnce()
+  })
+
+  it('cancels the running effect before the next transition starts', async () => {
+    runTransition(() => {}, request)
+    started[0]!.run()
+    await Promise.resolve()
+    const effect = animate.mock.results[0]!.value as { cancel: ReturnType<typeof vi.fn> }
+    runTransition(() => {}, request)
+    expect(effect.cancel).toHaveBeenCalledOnce()
+    expect(started[0]!.skipTransition).toHaveBeenCalledOnce()
   })
 
   it('ignores a transition that is skipped before it is ready', async () => {

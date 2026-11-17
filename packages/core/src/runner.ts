@@ -24,6 +24,9 @@ export function noop(): void {
 }
 
 let active: ViewTransition | undefined
+// The effect animations of `active`. They are cancelled before the next transition starts: starting one while a
+// pseudo-element animation is still running crashes headless Chromium (159), and a cancelled effect has nothing to show.
+let effects: Animation[] = []
 
 const prefersReducedMotion = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -76,7 +79,10 @@ function guardCss(update: Change): Change {
       release()
       throw error
     }
-    if (pending === undefined) { release(); return; }
+    if (pending === undefined) {
+      release()
+      return
+    }
     return pending.finally(release)
   }
 }
@@ -102,6 +108,8 @@ export function runTransition(change: Change, request: TransitionRequest): void 
   }
 
   // Skipping still runs the first update, so the page ends on the latest theme either way.
+  for (const effect of effects) effect.cancel()
+  effects = []
   active?.skipTransition()
   const removeStyle = injectStyle(definition.top ?? 'new')
   const transition = document.startViewTransition(update)
@@ -118,12 +126,13 @@ export function runTransition(change: Change, request: TransitionRequest): void 
       for (const layer of ['old', 'new'] as const) {
         const keyframes = definition[layer]?.(context)
         if (keyframes === undefined) continue
-        document.documentElement.animate(keyframes, {
+        const effect = document.documentElement.animate(keyframes, {
           duration: request.duration,
           easing: request.easing,
           fill: 'both',
           pseudoElement: `::view-transition-${layer}(root)`,
         })
+        effects.push(effect)
       }
     },
     () => {
