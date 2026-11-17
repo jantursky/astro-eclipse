@@ -27,6 +27,9 @@ let active: ViewTransition | undefined
 // The effect animations of `active`. They are cancelled before the next transition starts: starting one while a
 // pseudo-element animation is still running crashes headless Chromium (159), and a cancelled effect has nothing to show.
 let effects: Animation[] = []
+// Counts calls. A change from an earlier call that has not run yet is dropped when a later call exists: the later
+// one already carries the state the page should end on, and running the older one afterwards would undo it.
+let latest = 0
 
 const prefersReducedMotion = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -92,7 +95,9 @@ function guardCss(update: Change): Change {
  * page allow it, and plainly otherwise. Never throws because an effect could not run.
  */
 export function runTransition(change: Change, request: TransitionRequest): void {
-  const update = request.guardCss === true ? guardCss(change) : change
+  const id = ++latest
+  const current: Change = () => (id === latest ? change() : undefined)
+  const update = request.guardCss === true ? guardCss(current) : current
   const definition = getTransition(request.name)
   const canAnimate =
     typeof document.startViewTransition === 'function' &&
@@ -123,16 +128,22 @@ export function runTransition(change: Change, request: TransitionRequest): void 
         width: innerWidth,
         height: innerHeight,
       }
-      for (const layer of ['old', 'new'] as const) {
-        const keyframes = definition[layer]?.(context)
-        if (keyframes === undefined) continue
-        const effect = document.documentElement.animate(keyframes, {
-          duration: request.duration,
-          easing: request.easing,
-          fill: 'both',
-          pseudoElement: `::view-transition-${layer}(root)`,
-        })
-        effects.push(effect)
+      try {
+        for (const layer of ['old', 'new'] as const) {
+          const keyframes = definition[layer]?.(context)
+          if (keyframes === undefined) continue
+          const effect = document.documentElement.animate(keyframes, {
+            duration: request.duration,
+            easing: request.easing,
+            fill: 'both',
+            pseudoElement: `::view-transition-${layer}(root)`,
+          })
+          effects.push(effect)
+        }
+      } catch {
+        // An invalid easing, or custom keyframes that throw: the page still switches, just without the effect.
+        for (const effect of effects) effect.cancel()
+        effects = []
       }
     },
     () => {

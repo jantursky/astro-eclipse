@@ -35,7 +35,7 @@
     "import": "*",
     "ignore": ["virtual:astro-eclipse/config"],
     "gzip": true,
-    "limit": "4.8 kB"
+    "limit": "4.85 kB"
   },
   {
     "name": "Headless module (own code)",

@@ -261,6 +261,58 @@ describe('runTransition', () => {
     expect(started[0]!.skipTransition).toHaveBeenCalledOnce()
   })
 
+  it('drops the update of an earlier call once a later call exists', () => {
+    const first = vi.fn()
+    const second = vi.fn()
+    runTransition(first, request)
+    runTransition(second, request)
+    // The browser runs the update callbacks later, in order.
+    started[0]!.run()
+    started[1]!.run()
+    expect(first).not.toHaveBeenCalled()
+    expect(second).toHaveBeenCalledOnce()
+  })
+
+  it('drops a pending update when a later call applies at once', () => {
+    const first = vi.fn()
+    const second = vi.fn()
+    runTransition(first, request)
+    runTransition(second, { ...request, isBusy: () => true })
+    started[0]!.run()
+    expect(second).toHaveBeenCalledOnce()
+    expect(first).not.toHaveBeenCalled()
+  })
+
+  it('keeps the instant result when the effect cannot be started', async () => {
+    animate.mockImplementation(() => {
+      throw new TypeError('invalid easing')
+    })
+    const update = vi.fn()
+    runTransition(update, { ...request, easing: 'nope' })
+    started[0]!.run()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(update).toHaveBeenCalledOnce()
+  })
+
+  it('cancels the part of an effect that started before another part failed', async () => {
+    const cancel = vi.fn()
+    animate
+      .mockImplementationOnce(() => ({ cancel }))
+      .mockImplementationOnce(() => {
+        throw new TypeError('invalid keyframes')
+      })
+    defineTransition('both-layers', {
+      old: () => [{ opacity: 1 }, { opacity: 0 }],
+      new: () => [{ opacity: 0 }, { opacity: 1 }],
+    })
+    runTransition(() => {}, { ...request, name: 'both-layers' })
+    started[0]!.run()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(cancel).toHaveBeenCalledOnce()
+  })
+
   it('ignores a transition that is skipped before it is ready', async () => {
     skipNext = true
     runTransition(() => {}, request)
