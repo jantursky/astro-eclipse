@@ -1,0 +1,60 @@
+{
+  "name": "@penumbra/core",
+  "version": "1.0.0",
+  "description": "Animated theme transitions on the View Transitions API: circle reveal, wipe, blinds and more. The shared engine behind astro-penumbra and nuxt-penumbra.",
+  "license": "MIT",
+  "author": {
+    "name": "Jan Tursky",
+    "email": "jan.tursky@gmail.com",
+    "url": "https://jantursky.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jantursky/astro-eclipse.git",
+    "directory": "packages/core"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12"
+  },
+  "keywords": [
+    "view-transitions",
+    "theme-transition",
+    "theme",
+    "dark-mode",
+    "color-scheme"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint:package": "publint --strict && attw --pack . --profile esm-only"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@types/node": "^22",
+    "@vitest/coverage-v8": "^5",
+    "happy-dom": "^21.0.4",
+    "publint": "^0.3.25",
+    "typescript": "~5.9.3",
+    "vitest": "^5"
+  }
+}

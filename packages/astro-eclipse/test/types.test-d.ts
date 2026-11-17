@@ -1,9 +1,9 @@
 import { describe, expectTypeOf, it } from 'vitest'
 
 import eclipse, { type ColorScheme, type EclipseConfig, type EclipseOptions } from '../src/index.js'
-import { defineTransition, type Direction, type TransitionDefinition } from '../src/client/transitions.js'
+import { defineTransition, type Direction, type TransitionDefinition } from '@penumbra/core'
 import { createEclipse, type Eclipse, type SetThemeOptions, type ThemeChange } from '../src/client/core.js'
-import type { Origin, Point } from '../src/client/origin.js'
+import type { Origin, Point } from '@penumbra/core'
 
 // Components are `.astro` files, which tsc cannot see into. Their props are checked by `astro check` in apps/example.
 

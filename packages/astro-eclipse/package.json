@@ -73,6 +73,9 @@
     "test:pack": "node scripts/pack-test.js",
     "size": "size-limit"
   },
+  "dependencies": {
+    "@penumbra/core": "^1.0.0"
+  },
   "peerDependencies": {
     "astro": "^5.0.0 || ^6.0.0 || ^7.0.0"
   },

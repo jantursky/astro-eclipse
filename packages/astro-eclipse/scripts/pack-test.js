@@ -15,6 +15,8 @@ const write = (path, content) => {
 }
 
 try {
+  // The core package is not on the registry until it is published, so the consumer installs its tarball too.
+  const [core] = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', dir], join(packageDir, '..', 'core')))
   const [packed] = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', dir], packageDir))
   const files = packed.files.map((file) => file.path).sort()
   const allowed = /^(dist\/.+\.(js|js\.map|d\.ts|astro)|README\.md|CHANGELOG\.md|LICENSE|package\.json)$/
@@ -30,6 +32,7 @@ try {
       '--no-audit',
       '--no-fund',
       '--loglevel=error',
+      `./${core.filename}`,
       `./${packed.filename}`,
       `astro@${process.env.ASTRO_VERSION ?? 'latest'}`,
     ],

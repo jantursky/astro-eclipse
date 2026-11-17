@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { coverRadius, resolveOrigin } from '../src/client/origin.js'
+import { coverRadius, resolveOrigin } from '../src/origin.js'
 
 const viewport = { width: 1000, height: 600 }
 
