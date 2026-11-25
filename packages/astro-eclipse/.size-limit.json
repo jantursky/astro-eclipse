@@ -44,5 +44,37 @@
     "ignore": ["astro-eclipse/client"],
     "gzip": true,
     "limit": "400 B"
+  },
+  {
+    "name": "React hook (own code)",
+    "path": "dist/react.js",
+    "import": "*",
+    "ignore": ["react", "./client/index.js", "virtual:astro-eclipse/config"],
+    "gzip": true,
+    "limit": "400 B"
+  },
+  {
+    "name": "Vue hook (own code)",
+    "path": "dist/vue.js",
+    "import": "*",
+    "ignore": ["vue", "./client/index.js", "virtual:astro-eclipse/config"],
+    "gzip": true,
+    "limit": "400 B"
+  },
+  {
+    "name": "Svelte hook (own code)",
+    "path": "dist/svelte.js",
+    "import": "*",
+    "ignore": ["svelte", "svelte/store", "./client/index.js", "virtual:astro-eclipse/config"],
+    "gzip": true,
+    "limit": "400 B"
+  },
+  {
+    "name": "Solid hook (own code)",
+    "path": "dist/solid.js",
+    "import": "*",
+    "ignore": ["solid-js", "./client/index.js", "virtual:astro-eclipse/config"],
+    "gzip": true,
+    "limit": "400 B"
   }
 ]

@@ -39,6 +39,32 @@ try {
     dir,
   )
 
+  // The framework hooks are optional: the core entry loads without any framework, and each hook subpath resolves
+  // from the tarball and fails only on its own missing peer.
+  const probe = (code) => {
+    try {
+      return run('node', ['--input-type=module', '-e', code], dir)
+    } catch (error) {
+      return `${error.stdout ?? ''}${error.stderr ?? ''}`
+    }
+  }
+  const coreImport = probe("await import('astro-eclipse'); console.log('core-ok')")
+  if (!coreImport.includes('core-ok')) throw new Error(`The core entry does not load without frameworks: ${coreImport}`)
+  for (const [subpath, peer] of [
+    ['react', 'react'],
+    ['vue', 'vue'],
+    ['svelte', 'svelte'],
+    ['solid', 'solid-js'],
+  ]) {
+    const resolved = probe(`console.log(import.meta.resolve('astro-eclipse/${subpath}'))`)
+    if (!resolved.includes(`dist/${subpath}.js`))
+      throw new Error(`astro-eclipse/${subpath} does not resolve: ${resolved}`)
+    const loaded = probe(`await import('astro-eclipse/${subpath}')`)
+    if (!loaded.includes(`'${peer}'`))
+      throw new Error(`astro-eclipse/${subpath} should fail on the missing "${peer}": ${loaded}`)
+  }
+  console.log('core loads without frameworks; each hook subpath resolves and only needs its own peer')
+
   write(
     'astro.config.mjs',
     `import { defineConfig } from 'astro/config'

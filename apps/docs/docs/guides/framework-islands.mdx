@@ -1,37 +1,23 @@
 ---
 title: Framework islands
-description: A useTheme hook for React, Vue, Svelte and Solid built on getTheme and onThemeChange.
+description: useTheme for React, Vue, Svelte and Solid, importable from astro-eclipse.
 ---
 
-The client API is plain TypeScript, so it works inside any island. What an island usually needs is the current theme as reactive state, to render a different icon or label. `onThemeChange` and `getTheme` are enough to build that.
+An island usually needs the current theme as reactive state, to render a different icon or label. `astro-eclipse` ships a `useTheme` hook for React, Vue, Svelte and Solid. Each one:
 
-These hooks are examples to copy into your project, not packages. Each one:
-
-- reads the theme on the client only;
+- reads the theme on the client only: `theme`, `preference` and `systemTheme` are `undefined` on the server and during hydration, so the first render matches the server HTML;
 - unsubscribes when the component goes away;
-- returns the applied theme (`light`, `dark`, never `system`) and the visitor's preference (which may be `system`).
+- returns the applied theme (`light`, `dark`, never `system`), the visitor's preference (which may be `system`), the configured `themes` and the `systemTheme` (`light` or `dark`).
+
+Each framework is an optional peer dependency. A project that does not use one installs nothing extra, and the hooks add nothing to the core client bundle.
 
 To change the theme, call `toggleTheme` or `setTheme` from the event handler in the island as usual.
 
 ## React
 
-```tsx src/hooks/useTheme.ts
-import { useSyncExternalStore } from 'react'
-import { getPreference, getTheme, onThemeChange } from 'astro-eclipse/client'
-
-const subscribe = (notify: () => void) => onThemeChange(() => notify())
-
-export function useTheme() {
-  // The server snapshot must match the server-rendered HTML, so it cannot read the visitor's real theme.
-  const theme = useSyncExternalStore(subscribe, getTheme, () => undefined)
-  const preference = useSyncExternalStore(subscribe, getPreference, () => undefined)
-  return { theme, preference }
-}
-```
-
 ```tsx src/components/ThemeButton.tsx
 import { toggleTheme } from 'astro-eclipse/client'
-import { useTheme } from '../hooks/useTheme'
+import { useTheme } from 'astro-eclipse/react'
 
 export function ThemeButton() {
   const { theme } = useTheme()
@@ -43,100 +29,67 @@ export function ThemeButton() {
 }
 ```
 
-`event.nativeEvent` is the DOM `MouseEvent` that `origin` expects.
-
-On the server and during hydration the hook returns `undefined`, so the first render matches the server HTML and React reports no mismatch. The real theme arrives right after hydration. Render the island with `client:only="react"` to skip the server render entirely.
+`event.nativeEvent` is the DOM `MouseEvent` that `origin` expects. The hook is built on `useSyncExternalStore` with an `undefined` server snapshot, so React reports no hydration mismatch. The real theme arrives right after hydration. Render the island with `client:only="react"` to skip the server render entirely.
 
 ## Vue
 
-```ts src/composables/useTheme.ts
-import { onMounted, onUnmounted, readonly, ref } from 'vue'
-import { getPreference, getTheme, onThemeChange } from 'astro-eclipse/client'
+```vue src/components/ThemeButton.vue
+<script setup lang="ts">
+import { toggleTheme } from 'astro-eclipse/client'
+import { useTheme } from 'astro-eclipse/vue'
 
-export function useTheme() {
-  const theme = ref<string>()
-  const preference = ref<string>()
-  let stop: (() => void) | undefined
+const { theme } = useTheme()
+</script>
 
-  const sync = () => {
-    theme.value = getTheme()
-    preference.value = getPreference()
-  }
-
-  onMounted(() => {
-    sync()
-    stop = onThemeChange(sync)
-  })
-  onUnmounted(() => stop?.())
-
-  return { theme: readonly(theme), preference: readonly(preference) }
-}
+<template>
+  <button type="button" @click="toggleTheme({ origin: $event })">
+    {{ theme === 'dark' ? 'Switch to light' : 'Switch to dark' }}
+  </button>
+</template>
 ```
 
-Both values are `undefined` until the component mounts, so the server render and the first client render agree.
+`theme`, `preference` and `systemTheme` are read-only refs, `undefined` until the component mounts.
 
 ## Svelte
 
-Svelte 5, in a `.svelte.ts` file so runes work:
+```svelte src/components/ThemeButton.svelte
+<script lang="ts">
+  import { toggleTheme } from 'astro-eclipse/client'
+  import { useTheme } from 'astro-eclipse/svelte'
 
-```ts src/lib/theme.svelte.ts
-import { onMount } from 'svelte'
-import { getPreference, getTheme, onThemeChange } from 'astro-eclipse/client'
+  const { theme } = useTheme()
+</script>
 
-export function useTheme() {
-  let theme = $state<string>()
-  let preference = $state<string>()
-
-  onMount(() => {
-    const sync = () => {
-      theme = getTheme()
-      preference = getPreference()
-    }
-    sync()
-    return onThemeChange(sync)
-  })
-
-  return {
-    get theme() {
-      return theme
-    },
-    get preference() {
-      return preference
-    },
-  }
-}
+<button type="button" onclick={(event) => toggleTheme({ origin: event })}>
+  {$theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+</button>
 ```
 
-The function returned from `onMount` runs when the component is destroyed, which unsubscribes.
+`theme`, `preference` and `systemTheme` are Svelte stores, so prefix them with `$` in the template. They work in Svelte 4 and 5. Call `useTheme()` while the component initialises.
 
 ## Solid
 
-```ts src/hooks/useTheme.ts
-import { createSignal, onCleanup, onMount } from 'solid-js'
-import { getPreference, getTheme, onThemeChange } from 'astro-eclipse/client'
+```tsx src/components/ThemeButton.tsx
+import { toggleTheme } from 'astro-eclipse/client'
+import { useTheme } from 'astro-eclipse/solid'
 
-export function useTheme() {
-  const [theme, setCurrentTheme] = createSignal<string>()
-  const [preference, setCurrentPreference] = createSignal<string>()
-
-  onMount(() => {
-    const sync = () => {
-      setCurrentTheme(getTheme())
-      setCurrentPreference(getPreference())
-    }
-    sync()
-    onCleanup(onThemeChange(sync))
-  })
-
-  return { theme, preference }
+export function ThemeButton() {
+  const { theme } = useTheme()
+  return (
+    <button type="button" onClick={(event) => toggleTheme({ origin: event })}>
+      {theme() === 'dark' ? 'Switch to light' : 'Switch to dark'}
+    </button>
+  )
 }
 ```
 
-Read the values by calling them: `theme()`.
+`theme`, `preference` and `systemTheme` are signals: call them, `theme()`.
 
-## Without a hook
+## Write your own
 
-`onThemeChange` is a thin wrapper over a DOM event. Anything that can listen to `document` can use it directly:
+For another framework, build the hook on `getTheme`, `getPreference`, `getSystemTheme` and `onThemeChange` from `astro-eclipse/client`. Read on the client only, and return the unsubscribe function from `onThemeChange` on teardown.
+
+Anything that can listen to `document` can also use the event directly:
 
 ```ts
 document.addEventListener('eclipse:change', (event) => {

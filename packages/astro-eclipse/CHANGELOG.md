@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/).
 
+## [1.7.0] - 2026-11-25
+
+### Added
+
+- `astro-eclipse/react`, `astro-eclipse/vue`, `astro-eclipse/svelte` and `astro-eclipse/solid`: a tested, hydration-safe `useTheme()` for each framework, returning `theme`, `preference`, `themes` and `systemTheme`. Each framework is an optional peer dependency; the core entries and the client API size are unchanged.
+
+### Changed
+
+- The islands guide imports the hooks instead of asking you to copy them, and keeps a short note on writing your own.
+
 ## [1.6.0] - 2026-11-09
 
 ### Added

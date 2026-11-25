@@ -4,9 +4,12 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   resolve: {
+    // Svelte and Solid ship a server and a browser build; the tests drive components in the DOM.
+    conditions: ['browser'],
     alias: { 'virtual:astro-eclipse/config': fileURLToPath(new URL('test/virtual-config.ts', import.meta.url)) },
   },
   test: {
+    server: { deps: { inline: [/solid-js/, /svelte/] } },
     environment: 'happy-dom',
     include: ['test/**/*.test.ts'],
     typecheck: { enabled: true, include: ['test/**/*.test-d.ts'] },

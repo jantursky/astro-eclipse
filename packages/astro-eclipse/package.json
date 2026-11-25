@@ -1,6 +1,6 @@
 {
   "name": "astro-eclipse",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Astro integration for theme switching with animated View Transitions: circle reveal, wipe, blinds and more. No flash, survives ClientRouter navigation.",
   "license": "MIT",
   "author": {
@@ -35,6 +35,22 @@
     "./components": {
       "types": "./dist/components/index.d.ts",
       "default": "./dist/components/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "default": "./dist/vue.js"
+    },
+    "./svelte": {
+      "types": "./dist/svelte.d.ts",
+      "default": "./dist/svelte.js"
+    },
+    "./solid": {
+      "types": "./dist/solid.d.ts",
+      "default": "./dist/solid.js"
     },
     "./package.json": "./package.json"
   },
@@ -77,19 +93,44 @@
     "penumbra-core": "^1.0.0"
   },
   "peerDependencies": {
-    "astro": "^5.0.0 || ^6.0.0 || ^7.0.0"
+    "astro": "^5.0.0 || ^6.0.0 || ^7.0.0",
+    "react": ">=18",
+    "solid-js": "^1.0.0",
+    "svelte": "^4.0.0 || ^5.0.0",
+    "vue": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "solid-js": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@size-limit/esbuild": "^14",
     "@size-limit/file": "^14",
     "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^5",
     "astro": "^7.4.5",
     "happy-dom": "^21.0.4",
     "publint": "^0.3.25",
+    "react": "^19",
+    "react-dom": "^19",
     "size-limit": "^14",
+    "solid-js": "^1",
+    "svelte": "^5",
     "typescript": "~5.9.3",
-    "vitest": "^5"
+    "vitest": "^5",
+    "vue": "^3"
   }
 }

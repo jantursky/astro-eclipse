@@ -133,4 +133,14 @@ function getTransition(name: string): TransitionDefinition | undefined
 
 Returns the registered definition for `name`, or `undefined`. Call its `old` and `new` functions with a context to get the keyframes, for example to preview an effect on an element of your own. The demo gallery does this for its preview squares.
 
+## Framework hooks
+
+```ts
+import { useTheme } from 'astro-eclipse/react' // or 'astro-eclipse/vue', 'astro-eclipse/svelte', 'astro-eclipse/solid'
+```
+
+`useTheme()` returns `theme`, `preference`, `themes` and `systemTheme`, reactive in the framework's own idiom: plain values in React, refs in Vue, signals in Solid (`theme()`), stores in Svelte (`$theme`). `theme`, `preference` and `systemTheme` are `undefined` on the server and until the component has mounted; `themes` is always the configured list. The listener is removed when the component is destroyed.
+
+Each framework is an optional peer dependency (React 18 or later, Vue 3, Svelte 4 or 5, Solid 1). Installing `astro-eclipse` without them gives no warning and costs nothing. See [framework islands](/guides/framework-islands).
+
 Related: [config](/reference/config), [head script](/reference/head-script), [framework islands](/guides/framework-islands).

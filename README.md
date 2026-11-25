@@ -101,6 +101,14 @@ console.log(getTheme()) // 'dark', never 'system'
 const stop = onThemeChange(({ theme, preference }) => console.log(theme, preference))
 ```
 
+In a React, Vue, Svelte or Solid island, import `useTheme` instead of writing the subscription yourself. Each framework is an optional peer dependency:
+
+```tsx
+import { useTheme } from 'astro-eclipse/react' // or /vue, /svelte, /solid
+
+const { theme, preference, themes, systemTheme } = useTheme()
+```
+
 Or use the ready-made button:
 
 ```astro
